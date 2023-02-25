@@ -2,7 +2,7 @@ name: TSX Download minute data
 on:
   workflow_dispatch: null
   schedule:
-    - cron: "0 2 * * 1-5"  # At 2:00 am every day on maondays to fridays
+    - cron: "0 2 * * *"  # At 2:00 am every day on everyday
 jobs:
   build:
     runs-on: ubuntu-latest

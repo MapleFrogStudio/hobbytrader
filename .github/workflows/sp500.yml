@@ -2,7 +2,7 @@ name: SP500 Download minute data
 on:
   workflow_dispatch: null
   schedule:
-    - cron: "0 1 * * 1-5"  # At 1:00 am every day on maondays to fridays
+    - cron: "0 1 * * *"  # At 1:00 am every day on every day
 jobs:
   build:
     runs-on: ubuntu-latest
