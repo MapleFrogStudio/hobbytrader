@@ -1,5 +1,4 @@
 # Large CSV file to ignore
-*.csv
 *.exe
 
 # Byte-compiled / optimized / DLL files
