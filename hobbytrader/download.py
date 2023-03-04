@@ -22,10 +22,17 @@ def tsx():
     prices_df.to_csv(f'DATASET/CSV/TSX-{date_obj.date()}.csv', index=True)
 
 def nasdaq(tickers_list, sector_code):
-    prices_df = minute_prices(tickers_list)
-    date_obj = datetime.datetime.now()
-    prices_df.to_parquet(f'DATASET/PARQUET/NASDAQ-{sector_code}-{date_obj.date()}.parquet', engine='pyarrow', index=True)
-    prices_df.to_csv(f'DATASET/CSV/NASDAQ-{sector_code}-{date_obj.date()}.csv', index=True)
+    list_block_size = 800
+    for i in range(0, len(tickers_list), list_block_size):
+        #print(f'Index: {i}, Modulo:{i%(list_block_size-1)}')
+        #print(tickers_list[i:i+list_block_size])
+        subset_df = tickers_list[i:i+list_block_size].copy()
+        prices_df = minute_prices(subset_df)
+        
+        blockid = i%(list_block_size-1)
+        date_obj = datetime.datetime.now()
+        prices_df.to_parquet(f'DATASET/PARQUET/NASDAQ-{sector_code}{blockid}-{date_obj.date()}.parquet', engine='pyarrow', index=True)
+        prices_df.to_csv(f'DATASET/CSV/NASDAQ-{sector_code}{blockid}-{date_obj.date()}.csv', index=True)
 
 
 def nasdaq_nosector():
