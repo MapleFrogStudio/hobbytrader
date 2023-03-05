@@ -2,7 +2,7 @@ name: NASDAQ Technology Download minute data
 on:
   workflow_dispatch: null
   schedule:
-    - cron: "00 3 * * *"  # At 3:00 am every day on everyday
+    - cron: "30 6 * * *"  # At 6:30 am every day on everyday
 jobs:
   build:
     runs-on: ubuntu-latest

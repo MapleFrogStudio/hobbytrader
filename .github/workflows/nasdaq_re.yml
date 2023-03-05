@@ -2,7 +2,7 @@ name: NASDAQ Real Estate Download minute data
 on:
   workflow_dispatch: null
   schedule:
-    - cron: "50 3 * * *"  # At 3:50 am every day on everyday
+    - cron: "0 6 * * *"  # At 6:00 am every day on everyday
 jobs:
   build:
     runs-on: ubuntu-latest

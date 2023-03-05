@@ -2,7 +2,7 @@ name: NASDAQ Consumer Cyclical Download minute data
 on:
   workflow_dispatch: null
   schedule:
-    - cron: "10 3 * * *"  # At 3:10 am every day on everyday
+    - cron: "30 2 * * *"  # At 2:30 am every day on everyday
 jobs:
   build:
     runs-on: ubuntu-latest
