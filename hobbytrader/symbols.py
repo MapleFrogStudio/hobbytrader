@@ -33,14 +33,14 @@ def grab_SP500_from_github_mfs_dataset():
     tickers_df['Yahoo'] = [s.replace('.', '-') for s in tickers_df.Symbol]
     return tickers_df
 
-def grab_tsx_stocks():
+def grab_tsx_stocks_from_github_mfs_dataset():
     url = "https://raw.githubusercontent.com/MapleFrogStudio/DATASETS/main/STOCK_SYMBOLS/YAHOO/tsx.csv"
     tickers_df = pd.read_csv(url, header=0, index_col=None, keep_default_na=False)
     tickers_df = tickers_df.loc[tickers_df.Type == 'EQUITY']
     
     return tickers_df
 
-def grab_nasdaq_sector(sector):
+def grab_nasdaq_sector_from_github_mfs_dataset(sector):
     nasdaq_url = 'https://raw.githubusercontent.com/MapleFrogStudio/DATASETS/main/STOCK_SYMBOLS/YAHOO/nasdaq.csv'
     nasdaq_df = pd.read_csv(nasdaq_url, header=0, index_col=None, keep_default_na=False)
     sector_df = nasdaq_df.loc[nasdaq_df.Type == 'EQUITY'].copy()
