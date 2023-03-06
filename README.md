@@ -9,7 +9,7 @@ This project uses github actions to download daily minute price data and archive
 
 ## Modules 
   
-**Download** : module to automatically download minute price data using Github Actions  
+**Download** : module to automatically download minute price data for the previous day using Github Actions (please remember non trading days will have duplicate data)  
 
 
 ## Limitations
