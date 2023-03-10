@@ -15,7 +15,7 @@ def sp500():
     prices_df.to_csv(f'DATASET/CSV/SP500-{date_obj.date()}.csv', index=True)
 
 def tsx():
-    tickers_list = tsx_tickers().YahooTicker.to_list()
+    tickers_list = tsx_tickers().Yahoo.to_list()
     prices_df = minute_prices(tickers_list)
     date_obj = datetime.datetime.now()
     prices_df.to_parquet(f'DATASET/PARQUET/TSX-{date_obj.date()}.parquet', engine='pyarrow', index=True)
@@ -37,61 +37,61 @@ def nasdaq(tickers_list, sector_code):
 
 def nasdaq_nosector():
     tickers = nasdaq_sector('')
-    tickers_list = tickers.YahooTicker.to_list()    
+    tickers_list = tickers.Yahoo.to_list()    
     nasdaq(tickers_list, 'NS')
 
 def nasdaq_cd():
     tickers = nasdaq_sector('Consumer Defensive')
-    tickers_list = tickers.YahooTicker.to_list()    
+    tickers_list = tickers.Yahoo.to_list()    
     nasdaq(tickers_list, 'CD')
 
 def nasdaq_fs():
     tickers = nasdaq_sector('Financial Services')
-    tickers_list = tickers.YahooTicker.to_list()    
+    tickers_list = tickers.Yahoo.to_list()    
     nasdaq(tickers_list, 'FS')
 
 def nasdaq_healthcare():
     tickers = nasdaq_sector('Healthcare')
-    tickers_list = tickers.YahooTicker.to_list()    
+    tickers_list = tickers.Yahoo.to_list()    
     nasdaq(tickers_list, 'HC')
 
 def nasdaq_industrials():
     tickers = nasdaq_sector('Industrials')
-    tickers_list = tickers.YahooTicker.to_list()    
+    tickers_list = tickers.Yahoo.to_list()    
     nasdaq(tickers_list, 'IN')
 
 def nasdaq_technology():
     tickers = nasdaq_sector('Technology')
-    tickers_list = tickers.YahooTicker.to_list()    
+    tickers_list = tickers.Yahoo.to_list()    
     nasdaq(tickers_list, 'TE')
 
 def nasdaq_cc():
     tickers = nasdaq_sector('Consumer Cyclical')
-    tickers_list = tickers.YahooTicker.to_list()    
+    tickers_list = tickers.Yahoo.to_list()    
     nasdaq(tickers_list, 'CC')
 
 def nasdaq_bm():
     tickers = nasdaq_sector('Basic Materials')
-    tickers_list = tickers.YahooTicker.to_list()    
+    tickers_list = tickers.Yahoo.to_list()    
     nasdaq(tickers_list, 'BM')
 
 def nasdaq_utilities():
     tickers = nasdaq_sector('Utilities')
-    tickers_list = tickers.YahooTicker.to_list()    
+    tickers_list = tickers.Yahoo.to_list()    
     nasdaq(tickers_list, 'UT')
 
 def nasdaq_cs():
     tickers = nasdaq_sector('Communication Services')
-    tickers_list = tickers.YahooTicker.to_list()    
+    tickers_list = tickers.Yahoo.to_list()    
     nasdaq(tickers_list, 'CS')
 
 def nasdaq_re():
     tickers = nasdaq_sector('Real Estate')
-    tickers_list = tickers.YahooTicker.to_list()    
+    tickers_list = tickers.Yahoo.to_list()    
     nasdaq(tickers_list, 'RE')
 
 def nasdaq_energy():
     tickers = nasdaq_sector('Energy')
-    tickers_list = tickers.YahooTicker.to_list()    
+    tickers_list = tickers.Yahoo.to_list()    
     nasdaq(tickers_list, 'EN')
 
