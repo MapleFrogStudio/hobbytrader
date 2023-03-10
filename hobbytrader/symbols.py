@@ -27,22 +27,24 @@ def grab_SP500_from_wikipedia():
     return tickers_df
 
 
-def grab_SP500_from_github_mfs_dataset():
+def grab_SP500_from_github_mfs_dataset() -> pd.DataFrame:
     url = "https://raw.githubusercontent.com/MapleFrogStudio/DATASETS/main/STOCK_SYMBOLS/CSV/sp500.csv"
     tickers_df = pd.read_csv(url, header=0, index_col=None)
     tickers_df['Yahoo'] = [s.replace('.', '-') for s in tickers_df.Symbol]
     return tickers_df
 
-def grab_tsx_stocks_from_github_mfs_dataset():
+def grab_tsx_stocks_from_github_mfs_dataset() -> pd.DataFrame:
     url = "https://raw.githubusercontent.com/MapleFrogStudio/DATASETS/main/STOCK_SYMBOLS/YAHOO/tsx.csv"
     tickers_df = pd.read_csv(url, header=0, index_col=None, keep_default_na=False)
+    tickers_df['Yahoo'] = [f"{s.replace('.', '-')}.TO" for s in tickers_df.Symbol]
     tickers_df = tickers_df.loc[tickers_df.Type == 'EQUITY']
     
     return tickers_df
 
-def grab_nasdaq_sector_from_github_mfs_dataset(sector):
+def grab_nasdaq_sector_from_github_mfs_dataset(sector='Energy') -> pd.DataFrame:
     nasdaq_url = 'https://raw.githubusercontent.com/MapleFrogStudio/DATASETS/main/STOCK_SYMBOLS/YAHOO/nasdaq.csv'
     nasdaq_df = pd.read_csv(nasdaq_url, header=0, index_col=None, keep_default_na=False)
+    nasdaq_df.rename(columns={'YahooTicker':'Yahoo'}, inplace=True)
     sector_df = nasdaq_df.loc[nasdaq_df.Type == 'EQUITY'].copy()
     sector_df = sector_df.loc[sector_df.Sector == sector].copy()
     return sector_df
