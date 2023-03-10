@@ -16,6 +16,9 @@ This project uses github actions to download daily minute price data and archive
 - Lists of symbols come from statc symbols files that are updated on a random frequency
 - Minuet Price Data are stored in blocks of symbols to helps keep files under Github limitations
 
+## Possible Data sources to investigate
+[NASDAQ Stick Screener](https://www.nasdaq.com/market-activity/stocks/screener) to download csv files  
+[ADVFN](https://ca.advfn.com/investing/stocks/canada/tsx?letter=A)
 
 <!-- 
 1) # Title of your project
