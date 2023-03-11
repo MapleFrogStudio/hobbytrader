@@ -1,0 +1,33 @@
+name: NASDAQ Consumer Defensive Download minute data
+on:
+  workflow_dispatch: null
+  schedule:
+    - cron: "0 3 * * *"  # At 3:00 am every day on everyday
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: install packages
+        run: |
+          pip install --upgrade pip
+          pip install .
+      - name: download data from yahoo
+        run: nasdaq_cd
+        
+      - name: checkin repo with push
+        run: >
+          git config --local user.email 'action@github.com'
+
+          git config --local user.name 'Github Action'
+
+          git add --force DATASET
+
+          git commit -m 'Action workflow data update' --allow-empty
+
+          git push
