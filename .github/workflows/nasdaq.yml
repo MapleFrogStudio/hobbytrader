@@ -1,0 +1,45 @@
+name: NASDAQ Basic Materials Download minute data
+on:
+  workflow_dispatch: null
+  #schedule:
+  #  - cron: "0 2 * * *"  # At 2:00 am every day on everyday
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: install packages
+        run: |
+          pip install --upgrade pip
+          pip install .
+      - name: download data from yahoo all sectors
+        run: |
+          nasdaq_bm
+          nasdaq_cc
+          nasdaq_cd
+          nasdaq_cs
+          nasdaq_en
+          nasdaq_fs
+          nasdaq_hc
+          nasdaq_in
+          nasdaq_ns
+          nasdaq_re
+          nasdaq_te
+          nasdaq_ut
+        
+      - name: checkin repo with push
+        run: >
+          git config --local user.email 'action@github.com'
+
+          git config --local user.name 'Github Action'
+
+          git add --force DATASET
+
+          git commit -m 'Action workflow data update' --allow-empty
+
+          git push
