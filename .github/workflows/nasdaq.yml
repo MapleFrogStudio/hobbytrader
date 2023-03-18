@@ -1,4 +1,4 @@
-name: NASDAQ Basic Materials Download minute data
+name: NASDAQ all sectors Download minute data
 on:
   workflow_dispatch: null
   #schedule:
@@ -27,10 +27,10 @@ jobs:
           nasdaq_fs
           nasdaq_hc
           nasdaq_in
-          nasdaq_ns
           nasdaq_re
           nasdaq_te
           nasdaq_ut
+          nasdaq_ns
         
       - name: checkin repo with push
         run: >
