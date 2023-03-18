@@ -1,8 +1,8 @@
 name: NASDAQ No Sector Download minute data
 on:
   workflow_dispatch: null
-  schedule:
-    - cron: "30 1 * * *"  # At 1:30 am every day on everyday
+  #schedule:
+  #  - cron: "30 1 * * *"  # At 1:30 am every day on everyday
 jobs:
   build:
     runs-on: ubuntu-latest
