@@ -21,6 +21,7 @@ dependencies = [
     "pandas",
     "black",
     "jupyter",
+    "pytest",
 ]
 
 [project.scripts]
