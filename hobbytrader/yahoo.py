@@ -1,3 +1,4 @@
+import os
 import glob
 import pandas as pd
 import yfinance as yf
@@ -81,7 +82,9 @@ def build_sqlite_db_with_daily_minute_prices(db_name, base_name):
         print('No db connection established')
         return
 
+    # files_to_load = os.listdir(r'.\DATASET\CSV')
     files_to_load = glob.glob(f'DATASET\CSV\{base_name}*.csv')
+    #print(files_to_load)
 
     for file_name in files_to_load:
         print(file_name)
@@ -99,6 +102,6 @@ def build_sqlite_db_with_daily_minute_prices(db_name, base_name):
     db_connection.close()
 
 if __name__ == '__main__':
-    build_sqlite_db_with_daily_minute_prices('tsx.sqlite3', 'TSX')
+    # build_sqlite_db_with_daily_minute_prices('tsx.sqlite3', 'TSX')
     # build_sqlite_db_with_daily_minute_prices('sp500.sqlite3', 'SP500')
-    # build_sqlite_db_with_daily_minute_prices('nasdaq.sqlite3', 'NASDAQ')
+    build_sqlite_db_with_daily_minute_prices('nasdaq.sqlite3', 'NASDAQ')
