@@ -29,7 +29,7 @@ def grab_SP500_from_wikipedia():
 
 
 def grab_SP500_from_github_mfs_dataset() -> pd.DataFrame:
-    url = "https://raw.githubusercontent.com/MapleFrogStudio/DATASETS/main/STOCK_SYMBOLS/CSV/sp500.csv"
+    url = "https://raw.githubusercontent.com/MapleFrogStudio/DATASETS/main/STOCK_SYMBOLS/YAHOO/sp500.csv"
     tickers_df = pd.read_csv(url, header=0, index_col=None)
     tickers_df['Yahoo'] = [s.replace('.', '-') for s in tickers_df.Symbol]
     return tickers_df
