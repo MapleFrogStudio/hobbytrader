@@ -43,6 +43,7 @@ def grab_tsx_stocks_from_github_mfs_dataset() -> pd.DataFrame:
     return tickers_df
 
 def grab_nasdaq_sector_from_github_mfs_dataset(sector='Energy') -> pd.DataFrame:
+    # sectors = ['', 'Consumer Defensive', 'Financial Services', 'Healthcare', 'Industrials', 'Technology', 'Consumer Cyclical', 'Basic Materials', 'Utilities', 'Communication Services', 'Real Estate', 'Energy']
     nasdaq_url = 'https://raw.githubusercontent.com/MapleFrogStudio/DATASETS/main/STOCK_SYMBOLS/YAHOO/nasdaq.csv'
     nasdaq_df = pd.read_csv(nasdaq_url, header=0, index_col=None, keep_default_na=False)
     nasdaq_df.rename(columns={'YahooTicker':'Yahoo'}, inplace=True)
