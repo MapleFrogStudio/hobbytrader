@@ -19,8 +19,6 @@ dependencies = [
     "yfinance",
     "pyarrow",
     "pandas",
-    "black",
-    "jupyter",
     "pytest",
 ]
 
