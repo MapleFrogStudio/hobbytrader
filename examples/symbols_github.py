@@ -59,6 +59,6 @@ def demo_nasdaq(symbols):
     print(symbols)    
 
 if __name__ == '__main__':
-    demo_sp500(symbols)
+    #demo_sp500(symbols)
     #demo_tsx(symbols)
-    #demo_nasdaq(symbols)
+    demo_nasdaq(symbols)
