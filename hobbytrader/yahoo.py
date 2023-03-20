@@ -62,7 +62,7 @@ def _create_db_and_table(db_file) -> sqlite3.Connection:
     conn = None
     try:
         conn = sqlite3.connect(db_file)
-        print(f'Sqlite version: {sqlite3.version}')
+        print(f'Sqlite version: {sqlite3.sqlite_version}')
         cursor = conn.cursor()
         cursor.execute(sql_create_prices_table)
 
@@ -100,5 +100,5 @@ def build_sqlite_db_with_daily_minute_prices(db_name, base_name):
 
 if __name__ == '__main__':
     build_sqlite_db_with_daily_minute_prices('tsx.sqlite3', 'TSX')
-    # build_sqlite_db_with_daily_minute_prices('sp500.sqlite3', 'SP500')
-    # build_sqlite_db_with_daily_minute_prices('nasdaq.sqlite3', 'NASDAQ')
+    build_sqlite_db_with_daily_minute_prices('sp500.sqlite3', 'SP500')
+    build_sqlite_db_with_daily_minute_prices('nasdaq.sqlite3', 'NASDAQ')
