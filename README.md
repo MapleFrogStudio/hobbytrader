@@ -1,5 +1,6 @@
 # Maple Frog Studio - Hobby Trader Package 
-
+>**Warning**  
+>Work in progress, not production ready, poor documentation :)
 ## Hobby trader is a python project for manipulating historical price data for stock trading  
 
 This project uses github actions to download daily minute price data and archive the results as a CSV or PARQUET file. The generated files cover the following groups of symbols:
