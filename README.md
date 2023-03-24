@@ -12,7 +12,7 @@ This project uses github actions to download daily minute price data and archive
 ## Modules 
   
 **Download** : module to automatically download minute price data for the previous day using Github Actions (please remember non trading days will have duplicate data)  
-
+**More to comme...**
 
 ## Limitations
 - Lists of symbols come from statc symbols files that are updated on a random frequency
@@ -38,7 +38,7 @@ Open a command shell (powershell) and run the commands lines below
 ```
 
 ### Examples  
-Run examples from the root directory of you projet
+Run examples from the root directory of your projet
 ```
 > python .\examples\symbols_github.py  
 > python .\examples\symbols_sp500.py  
