@@ -1,6 +1,7 @@
 # Maple Frog Studio - Hobby Trader Package 
 >**Warning**  
->Work in progress, not production ready, poor documentation :)
+>Work in progress, not production ready, poor documentation :)  
+>No user interface, all demos run from the command line with results printed in the terminal
 ## Hobby trader is a python project for manipulating historical price data for stock trading  
 
 This project uses github actions to download daily minute price data and archive the results as a CSV or PARQUET file. The generated files cover the following groups of symbols:
@@ -16,6 +17,32 @@ This project uses github actions to download daily minute price data and archive
 ## Limitations
 - Lists of symbols come from statc symbols files that are updated on a random frequency
 - Minuet Price Data are stored in blocks of symbols to helps keep files under Github limitations
+
+## Installation
+Open a command shell (powershell) and run the commands lines below
+- Requires python 3.11 or higher so [Download](https://www.python.org/downloads/) latest version to upgrade your python environment
+- Clone the repository to your local folder
+- Create a python virtual envirnnement (suggested venv module that comes with python install)
+- Upgade your PIP installations and install dependencies
+- Pip install the package dependences
+- Run our check_install python script
+
+```  
+> python --version  
+> git clone git@github.com:MapleFrogStudio/hobbytrader.git hobbytrader
+> cd hobbytrader
+> python -m venv env
+> .\env\Scripts\Activate  
+> python -m pip install --upgrade pip
+> pip install -e .
+```
+
+### Examples  
+Run examples from the root directory of you projet
+```
+> python .\examples\symbols_github.py  
+> python .\examples\symbols_sp500.py  
+```
 
 ## Possible Data sources to investigate
 [NASDAQ Stock Screener](https://www.nasdaq.com/market-activity/stocks/screener) to download csv files  
