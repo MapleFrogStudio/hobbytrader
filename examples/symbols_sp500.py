@@ -5,6 +5,7 @@ from hobbytrader.symbols import grab_SP500_from_wikipedia
 # all stock data included in the S&P 500 index
 symbols_df = grab_SP500_from_wikipedia()
 print(symbols_df.columns)
+print(symbols_df.tail())
 
 print('--------------------------------')
 

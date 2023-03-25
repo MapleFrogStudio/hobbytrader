@@ -42,32 +42,12 @@ Run examples from the root directory of your projet
 ```
 > python .\examples\symbols_github.py  
 > python .\examples\symbols_sp500.py  
-```
+
+
 
 ## Possible Data sources to investigate
 [NASDAQ Stock Screener](https://www.nasdaq.com/market-activity/stocks/screener) to download csv files  
 [ADVFN](https://ca.advfn.com/investing/stocks/canada/tsx?letter=A)
 [Alpha Vantage](https://www.alphavantage.co/documentation/#listing-status) to download csv files of listed & delisted stock symbols
+[Financial Modeling Prep API](https://site.financialmodelingprep.com/developer/docs/) 
 
-<!-- 
-1) # Title of your project
-2) ## Short project description
-3) Introduction paragraph, used for SEO Value
-4) Simple diagram or Youtube video link
-5a) User instructions for user (not for coders)
-5b) Developer instructions (for contributors)
-6) Contributor expectations
-7) Known Issues
-8) Beg for money
-
-
-Readme != full documentation
-https://github.com/matiassingers/awesome-readme
-
-external tools:
-Banner Maker : https://banner.godori.dev/
-Shields : https://shields.io/
-Carbon : https://carbon.now.sh/  (for code presentation)
-
-
--->
