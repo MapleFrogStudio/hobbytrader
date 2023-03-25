@@ -3,7 +3,13 @@
 >Work in progress, not production ready, poor documentation :)  
 >No user interface, all demos run from the command line with results printed in the terminal
 ## Hobby trader is a python project for manipulating historical price data for stock trading  
+  
+This project is divided into three (3) repository:
+- [hobbytrader](https://github.com/MapleFrogStudio/hobbytrader) : repository with programs to create autoated strategies and backtest  
+- [downloader](https://github.com/MapleFrogStudio/downloader) : repository with github actions to download dialy minute price data  
+- [DATASET](https://github.com/MapleFrogStudio/DATASETS) : repository to store accumulated data for later use in backtesting  
 
+# Downloader
 This project uses github actions to download daily minute price data and archive the results as a CSV or PARQUET file. The generated files cover the following groups of symbols:
 * TSX
 * S&P500
@@ -11,7 +17,6 @@ This project uses github actions to download daily minute price data and archive
 
 ## Modules 
   
-**Download** : module to automatically download minute price data for the previous day using Github Actions (please remember non trading days will have duplicate data)  
 **More to comme...**
 
 ## Limitations
@@ -36,6 +41,10 @@ Open a command shell (powershell) and run the commands lines below
 > python -m pip install --upgrade pip
 > pip install -e .
 ```
+### Commands  
+To download he latest trading day's minute price for the TSX, luanch tsx from the command line. A CSV file wil be created in teh DATASET local folder
+> tsx  
+* See the pyproject.toml file for other predefined commands
 
 ### Examples  
 Run examples from the root directory of your projet
