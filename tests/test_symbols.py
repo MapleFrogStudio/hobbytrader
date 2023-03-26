@@ -28,6 +28,6 @@ def test_grab_nasdaq_sector_from_github_mfs_dataset():
     assert results_df is not None
 
 def test_grab_nasdaq_sector_from_github_mfs_dataset_tech():
-    # Call with default sector
+    # Call with a sector passed as argument
     results_df = symbols.grab_nasdaq_sector_from_github_mfs_dataset(sector='Technology')
     assert results_df is not None
