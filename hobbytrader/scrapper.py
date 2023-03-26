@@ -45,6 +45,8 @@ def scrap_advfn(exchange='tsx', country='canada'):
     symbols_df = pd.DataFrame(symbols_list)
     return symbols_df
 
+
+# Predefined scrappers to use in guthub actions
 def scrape_tsx_from_advfn():
     exchange = 'tsx'
     country = 'canada'
@@ -94,4 +96,5 @@ def scrape_amex_from_advfn():
 
 
 if __name__ == '__main__':
+    # Change this function call to save scrapped data to a csv file
     scrape_tsx_from_advfn()
