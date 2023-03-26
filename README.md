@@ -15,15 +15,15 @@ This project uses github actions to download daily minute price data and archive
 * S&P500
 * Each sector (CS - Consumer Defensive, FS - Financial Services, HC - Healthcare, IN - Industrials, TE - technology, CC - Consumer Cyclical, BM - Basic Materials, UT - Utilisities, CS - Communication Services, RE - Real Estate, EN - Energy)
 
-## Modules 
+# Modules 
   
 **More to comme...**
 
-## Limitations
+# Limitations
 - Lists of symbols come from statc symbols files that are updated on a random frequency
 - Minuet Price Data are stored in blocks of symbols to helps keep files under Github limitations
 
-## Installation
+# Installation
 Open a command shell (powershell) and run the commands lines below
 - Requires python 3.11 or higher so [Download](https://www.python.org/downloads/) latest version to upgrade your python environment
 - Clone the repository to your local folder
@@ -41,18 +41,21 @@ Open a command shell (powershell) and run the commands lines below
 > python -m pip install --upgrade pip
 > pip install -e .
 ```
-### Commands  
+## Commands  
 To download he latest trading day's minute price for the TSX, luanch tsx from the command line. A CSV file wil be created in teh DATASET local folder
 > tsx  
 * See the pyproject.toml file for other predefined commands
+  
+## Tests  
+Run all tests in your environment using the following command (some tests might be longer than 1 minute)  
+>pytest -v  
 
-### Examples  
+## Examples  
 Run examples from the root directory of your projet
 ```
 > python .\examples\symbols_github.py  
 > python .\examples\symbols_sp500.py  
-
-
+```
 
 ## Possible Data sources to investigate
 [NASDAQ Stock Screener](https://www.nasdaq.com/market-activity/stocks/screener) to download csv files  
