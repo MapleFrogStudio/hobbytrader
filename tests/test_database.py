@@ -1,6 +1,7 @@
 import pytest
 import os
 import pandas as pd
+import sqlite3
 from hobbytrader import database
 
 testdata = [
@@ -41,3 +42,15 @@ def test_create_db_and_table():
     db_connection.close()
     if os.path.isfile(test_file):
         os.remove(test_file)
+
+def test_build_sqlite_db_with_daily_minute_prices():
+    base_name = 'TSX-2023-02'  # Select only a few files from 2023 february
+    db_name = 'tmp.sqlite3'
+    database.build_sqlite_db_with_daily_minute_prices(db_name, base_name)
+    conn = sqlite3.connect(db_name)
+    query = "SELECT * FROM prices"
+    new_df = pd.read_sql_query(query, conn)
+    assert len(new_df) > 200000
+    conn.close()
+    if os.path.isfile(db_name):
+        os.remove(db_name)
