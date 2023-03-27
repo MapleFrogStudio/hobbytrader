@@ -20,6 +20,8 @@ dependencies = [
     "pyarrow",
     "pandas",
     "pytest",
+    "beautifulsoup4",
+    "requests"
 ]
 
 [project.scripts]

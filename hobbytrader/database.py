@@ -1,7 +1,11 @@
+import re
 import glob
 import pandas as pd
 import yfinance as yf
 import sqlite3
+
+import requests
+from bs4 import BeautifulSoup
 
 from datetime import datetime, date, timedelta
 from sqlite3 import Error
@@ -10,10 +14,18 @@ from sqlite3 import Error
 # Database generation section
 #
 def filenames_from_github_repo(base_name):
-# TODO: Implement a function to list filenames from a github repo as a list
-    filenames = glob.glob(f'DATASET\CSV\{base_name}*.csv')
+    github_url = f'https://github.com/MapleFrogStudio/DATASETS/tree/main/DAILY'
+    result = requests.get(github_url)
+    soup = BeautifulSoup(result.text, 'html.parser')
+    #csvfiles = soup.find_all(title=re.compile(f"^{base_name}\.csv$"))
+    csvfiles = soup.find_all(title=re.compile(f"^{base_name}."))
 
-    return filenames
+    file_names = [ ]
+    for i in csvfiles:
+        file_names.append(i.extract().get_text())
+    print(file_names)    
+    return(file_names)
+
 
 def _create_db_and_table(db_file) -> sqlite3.Connection:
     sql_create_prices_table = """ CREATE TABLE IF NOT EXISTS prices (
@@ -47,13 +59,14 @@ def build_sqlite_db_with_daily_minute_prices(db_name, base_name):
     db_connection = _create_db_and_table(db_name)
     if db_connection is None:
         print('No db connection established')
-        return
+        return None
 
     files_to_load = filenames_from_github_repo(base_name)
 
     for file_name in files_to_load:
-        print(file_name)
-        prices_df = pd.read_csv(file_name)
+        url = f'https://raw.githubusercontent.com/MapleFrogStudio/DATASETS/main/DAILY/{file_name}'
+        print(url)
+        prices_df = pd.read_csv(url)
         # create a unique key for databse insert
         prices_df['ID'] = prices_df.Datetime.str.replace(" ", "")
         prices_df['ID'] = prices_df.ID.str.replace("-", "")
@@ -67,6 +80,6 @@ def build_sqlite_db_with_daily_minute_prices(db_name, base_name):
     db_connection.close()
 
 if __name__ == '__main__':
-    build_sqlite_db_with_daily_minute_prices('tsx.sqlite3', 'TSX')
+    #build_sqlite_db_with_daily_minute_prices('tsx.sqlite3', 'TSX')
     build_sqlite_db_with_daily_minute_prices('sp500.sqlite3', 'SP500')
-    build_sqlite_db_with_daily_minute_prices('nasdaq.sqlite3', 'NASDAQ')
+    #build_sqlite_db_with_daily_minute_prices('nasdaq.sqlite3', 'NASDAQ')
