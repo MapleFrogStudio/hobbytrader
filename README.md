@@ -59,7 +59,7 @@ Run examples from the root directory of your projet
 
 ## Possible Data sources to investigate
 [NASDAQ Stock Screener](https://www.nasdaq.com/market-activity/stocks/screener) to download csv files  
-[ADVFN](https://ca.advfn.com/investing/stocks/canada/tsx?letter=A)
-[Alpha Vantage](https://www.alphavantage.co/documentation/#listing-status) to download csv files of listed & delisted stock symbols
-[Financial Modeling Prep API](https://site.financialmodelingprep.com/developer/docs/) 
+[ADVFN](https://ca.advfn.com/investing/stocks/canada/tsx?letter=A)  
+[Alpha Vantage](https://www.alphavantage.co/documentation/#listing-status) to download csv files of listed & delisted stock symbols  
+[Financial Modeling Prep API](https://site.financialmodelingprep.com/developer/docs/)  
 
