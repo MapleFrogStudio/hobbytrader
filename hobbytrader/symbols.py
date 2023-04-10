@@ -2,8 +2,6 @@ import pandas as pd
 import requests
 import numpy as np
 import io
-import requests
-
 
 
 def grab_from_HTML_file():

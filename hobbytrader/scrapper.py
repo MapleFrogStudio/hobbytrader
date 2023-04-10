@@ -2,7 +2,6 @@ import pandas as pd
 import requests
 import numpy as np
 import io
-import requests
 import re
 import string
 import time

@@ -19,9 +19,12 @@ dependencies = [
     "yfinance",
     "pyarrow",
     "pandas",
-    "pytest",
     "beautifulsoup4",
-    "requests"
+    "requests",
+    "pandas-ta",
+    "matplotlib",
+    "scipy",
+    "pytest",
 ]
 
 [project.scripts]
