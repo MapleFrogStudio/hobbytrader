@@ -2,7 +2,6 @@
 # https://site.financialmodelingprep.com/developer/docs/
 import os
 import json
-import certifi
 import pandas as pd
 
 from urllib.request import urlopen
