@@ -23,6 +23,7 @@ dependencies = [
     "requests",
     "pandas-ta",
     "matplotlib",
+    "seaborn",
     "scipy",
     "pytest",
 ]
