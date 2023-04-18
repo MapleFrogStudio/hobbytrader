@@ -21,11 +21,13 @@ dependencies = [
     "pandas",
     "beautifulsoup4",
     "requests",
+    "certifi",
     "pandas-ta",
     "matplotlib",
     "seaborn",
     "scipy",
     "pytest",
+    "python-dotenv"
 ]
 
 [project.scripts]
