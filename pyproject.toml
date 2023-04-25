@@ -25,6 +25,7 @@ dependencies = [
     "pandas-ta",
     "matplotlib",
     "seaborn",
+    "panel",
     "scipy",
     "pytest",
     "python-dotenv"
