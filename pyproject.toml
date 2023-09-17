@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hobbytrader"]
+namespaces = false
+
+[project]
+name = "hobbytrader"
+version = "0.1.0"
+authors = [
+    {name = "Maple Frog Studio", email = "devops@maplefrogstudio.com"},
+]
+description = "Hobby trader is a python package for algorithmic trading ans backtesting"
+requires-python = ">=3.10"
+dependencies = [
+    "yfinance",
+    "pyarrow",
+    "pandas",
+    "beautifulsoup4",
+    "requests",
+    "certifi",
+    "PyQt6",
+    "pyqt6-tools",
+    "pandas-ta",
+    "matplotlib",
+    "finplot",
+    "seaborn",
+    "panel",
+    "scipy",
+    "pytest",
+    "pytest-cov",
+    "python-dotenv"
+]
+
+[project.scripts]
+sp500 = "hobbytrader.download:sp500"
+tsx = "hobbytrader.download:tsx"
+nasdaq_ns = "hobbytrader.download:nasdaq_nosector"
+nasdaq_cd = "hobbytrader.download:nasdaq_cd"
+nasdaq_fs = "hobbytrader.download:nasdaq_fs"
+nasdaq_hc = "hobbytrader.download:nasdaq_healthcare"
+nasdaq_in = "hobbytrader.download:nasdaq_industrials"
+nasdaq_te = "hobbytrader.download:nasdaq_technology"
+nasdaq_cc = "hobbytrader.download:nasdaq_cc"
+nasdaq_bm = "hobbytrader.download:nasdaq_bm"
+nasdaq_ut = "hobbytrader.download:nasdaq_utilities"
+nasdaq_cs = "hobbytrader.download:nasdaq_cs"
+nasdaq_re = "hobbytrader.download:nasdaq_re"
+nasdaq_en = "hobbytrader.download:nasdaq_energy"
