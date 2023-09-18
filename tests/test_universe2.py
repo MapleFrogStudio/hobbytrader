@@ -216,13 +216,41 @@ def test_json_returned(loaded_universe):
     symbols,u = loaded_universe
     json_dict = u.__json__()
     print(f'\nUniverse Json:{json_dict}')
+    assert json_dict is not None
 
 def test_json_empty_universe(empty_universe):
     symbols,u = empty_universe
     json_dict = u.__json__()
     print(f'\nUniverse Json:{json_dict}')
+    assert json_dict is None
 
 def test_json_partial_universe(partial_universe):
     symbols,u = partial_universe
     json_dict = u.__json__()
     print(f'\nUniverse Json:{json_dict}')
+    assert json_dict is not None
+
+def test_to_json_string_returned(loaded_universe):
+    symbols,u = loaded_universe
+    json_str = u.to_json()
+    print(f'Universe symbols: {u.loaded_symbols}')
+    print(f'Json string (to_json): {json_str}')
+    assert 'SymbolsNumber' in json_str
+
+def test_fail_to_json_string_returned(empty_universe):
+    symbols,u = empty_universe
+    json_str = u.to_json()
+    print(f'Universe symbols: {u.loaded_symbols}')
+    print(f'Json string (to_json): {json_str}')
+    assert json_str is None
+
+def test__str__loaded(loaded_universe):
+    symbols,u = loaded_universe
+    json_str = u.__str__()
+    print(json_str)
+
+def test_fail__str__loaded(empty_universe):
+    symbols,u = empty_universe
+    json_str = u.__str__()
+    print(json_str)    
+    assert json_str is None
