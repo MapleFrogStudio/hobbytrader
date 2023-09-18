@@ -35,6 +35,7 @@ class TradeUniverse():
             self.load_universe_data()
             self.update_universe_meta_data()
 
+
     def __json__(self):
         '''Return a python dictionary of relevant class attributes'''
         if self.datas is None:
@@ -57,9 +58,6 @@ class TradeUniverse():
         if json_obj is None:
             return None
         return json.dumps(json_obj, indent = indent, default=str)     
-
-
-
 
     @property
     def load_status(self) -> bool:
@@ -133,15 +131,9 @@ class TradeUniverse():
             self.datas = None
             self.reset_universe_meta_data()
             return
-        if len(self._valid_symbols) == 0:
-            self.datas = None
-            self.reset_universe_meta_data()
-            return
         
         self.datas = database.load_OHLCV_from_db_for_symbols(self.db_path, self._valid_symbols)
         self.datas = database.optimize_column_types(self.datas)        
-        if len(self.datas) == 0:
-            self.datas = None
 
     def reset_universe_meta_data(self) -> None:
         self.datas = None
@@ -183,10 +175,10 @@ class TradeUniverse():
         return id  
 
     def next_dt(self):
-        dt_index = self.date_index
-        if dt_index == len(self.dates):
+        index = self.date_index
+        if index >= len(self.dates)-1:
             return False
-        self.dt_current = self.dates[dt_index + 1]
+        self.dt_current = self.dates[index + 1]
         return True
     
     def prev_dt(self):
@@ -195,3 +187,4 @@ class TradeUniverse():
             return False
         self.dt_current = self.dates[dt_index - 1]
         return True
+

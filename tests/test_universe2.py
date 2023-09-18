@@ -168,6 +168,16 @@ def test_symbol_by_id(loaded_universe):
     print(f'loaded symbols: {u.loaded_symbols}')
     assert returned_symbol == symbols[symbol_id]
 
+def test_symbols_by_id_not_an_int(loaded_universe):
+    symbols, u = loaded_universe
+    returned_symbol = u.symbol_by_id('notint')
+    assert returned_symbol is None
+
+def test_symbols_by_id_out_of_range(loaded_universe):
+    symbols, u = loaded_universe
+    returned_symbol = u.symbol_by_id(len(u.loaded_symbols))
+    assert returned_symbol is None
+    
 def test_id_by_symbol(loaded_universe):
     symbols, u = loaded_universe
     symbols.sort()
@@ -180,23 +190,43 @@ def test_id_by_symbol(loaded_universe):
     print(f'loaded symbols: {u.loaded_symbols}')
     assert returned_id == id
 
+def test_id_by_symnol_not_a_string(loaded_universe):
+    symbol, u = loaded_universe
+    not_a_string = 10
+    id = u.id_by_symbol(not_a_string)
+    assert id == None
+
+def test_id_by_symbol_not_found(loaded_universe):
+    symbol, u = loaded_universe
+    not_foud_symbol = 'NoGood'
+    id = u.id_by_symbol(not_foud_symbol)
+    assert id == None
+
 def test_date_properties(loaded_universe):
     symbols, u = loaded_universe
     print(f'\nLoaded universe, date value: {u.date}')
     print(f'Loaded universe, date index: {u.date_index}')
     assert u.date == u.dates[0]
     assert u.date_index == 0
-    u.next_dt()
+    success1 = u.next_dt()
     print(f'\nLoaded universe, date value: {u.date}')
     print(f'Loaded universe, date index: {u.date_index}')
+    assert success1
     assert u.date == u.dates[1]
     assert u.date_index == 1
-    u.prev_dt()
+    success2 = u.prev_dt()
     print(f'\nLoaded universe, date value: {u.date}')
     print(f'Loaded universe, date index: {u.date_index}')
+    assert success2
     assert u.date == u.dates[0]
     assert u.date_index == 0
     assert u.prev_dt() is False  # Current date is already at index 0
+
+def test_date_index_no_dates_loaded(empty_universe):
+    _, u = empty_universe
+    u.dt_current = None # Force an incohernt config
+    returned_index = u.date_index
+    assert returned_index is None
 
 def test_date_index_setter(loaded_universe):
     _, u = loaded_universe
@@ -211,6 +241,14 @@ def test_date_index_setter(loaded_universe):
     assert u.date_index == 0
     u.date_index = len(u.dates)
     assert u.date_index == len(u.dates) - 1
+
+def test_next_dt_on_last_index(loaded_universe):
+    symbols,u = loaded_universe
+    last_date_index = len(u.dates)-1
+    u.date_index = last_date_index
+    print(f'\nCurrent date: {u.date}, at index: {u.date_index} where total dates: {len(u.dates)}')
+    success = u.next_dt()
+    assert not success
 
 def test_json_returned(loaded_universe):
     symbols,u = loaded_universe
