@@ -35,6 +35,32 @@ class TradeUniverse():
             self.load_universe_data()
             self.update_universe_meta_data()
 
+    def __json__(self):
+        '''Return a python dictionary of relevant class attributes'''
+        if self.datas is None:
+            return None
+        json_dict = {
+            "DatasRows": len(self.datas),
+            "DatesRange": {"First": self.dt_min, "Last":self.dt_max},
+            "Dates": self.dates,
+            "SymbolsRequested": self.symbols_requested,
+            "SymbolsLoaded": self.loaded_symbols,
+            "SymbolsNumber": len(self.loaded_symbols)
+        }
+        return json_dict
+    
+    def __str__(self):
+        return self.__json__()
+
+    def to_json(self, indent=2):
+        json_obj = self.__json__()
+        if json_obj is None:
+            return None
+        return json.dumps(json_obj, indent = indent, default=str)     
+
+
+
+
     @property
     def load_status(self) -> bool:
         if self.datas is None:
@@ -125,14 +151,6 @@ class TradeUniverse():
     def update_universe_meta_data(self):
         self.dates = np.unique(self.datas.Datetime.values)
         self.dt_current = self.dates[0]
-
-
-    def stats(self):
-        number_of_dates = len(self.dates)
-        
-        return {
-            "DatesCount":number_of_dates
-        }
 
     def prices_for_date(self, dt=None):
         if dt is None:
