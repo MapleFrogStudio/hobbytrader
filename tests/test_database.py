@@ -208,3 +208,14 @@ def test_return_valid_symbols_from_list_No_symbols_found():
     valid_symbols = database.return_valid_symbols_from_list(requested_symbols)
     assert valid_symbols is not None
     assert len(valid_symbols) == 0
+
+def test_generate_fake_data():
+    data = database.generate_fake_data()
+    assert data is not None
+    assert isinstance(data, pd.DataFrame)
+    assert 'Symbol' in data.columns
+    assert 'Open'   in data.columns
+    assert 'High'   in data.columns
+    assert 'Low'    in data.columns
+    assert 'Close'  in data.columns
+    assert 'Volume' in data.columns    
