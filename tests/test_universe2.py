@@ -21,6 +21,14 @@ def empty_universe():
     u = TradeUniverse(symbols, load_data=False)    
     return symbols, u
 
+@pytest.fixture()
+def partial_universe():
+    symbols = ['TSLA','AAPL', 'NoGood']
+    u = TradeUniverse(symbols, load_data=True)    
+    return symbols, u
+
+
+
 # SERIES OF TESTS TO CHECK contrutor without loading all the data
 def test_TradeUniverse_constructor_no_parameters():
     with pytest.raises(TypeError):
@@ -204,4 +212,17 @@ def test_date_index_setter(loaded_universe):
     u.date_index = len(u.dates)
     assert u.date_index == len(u.dates) - 1
 
+def test_json_returned(loaded_universe):
+    symbols,u = loaded_universe
+    json_dict = u.__json__()
+    print(f'\nUniverse Json:{json_dict}')
 
+def test_json_empty_universe(empty_universe):
+    symbols,u = empty_universe
+    json_dict = u.__json__()
+    print(f'\nUniverse Json:{json_dict}')
+
+def test_json_partial_universe(partial_universe):
+    symbols,u = partial_universe
+    json_dict = u.__json__()
+    print(f'\nUniverse Json:{json_dict}')
