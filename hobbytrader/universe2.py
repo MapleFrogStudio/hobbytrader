@@ -10,7 +10,7 @@ class TradeUniverse():
     TU_DATA_LOADED_SUCCESS = 1
     TU_DATA_LOADED_PARTIAL = 2
 
-    def __init__(self, symbols, load_data=True, db_path='DB/minute.sqlite'):
+    def __init__(self, symbols, load_data=True, db_path='DB/minute.sqlite', first_day: None):
         self.symbols_requested = []
         self._valid_symbols = None
         # Sanity checks on constructor parameters
@@ -26,6 +26,8 @@ class TradeUniverse():
 
         self.db_path = db_path
         self.reset_universe_meta_data()
+
+        #max_date = database.last_date_in_db()
 
         # If sanity checks passed, then symbols is a list of strings
         if len(self.symbols_requested) == 0:

@@ -8,6 +8,10 @@ from hobbytrader import DB_SQL_LIMIT
 from hobbytrader.github import Github
 
 def open_sqlite_db(db_file):
+    if not os.path.isfile(db_file):
+        #return None
+        raise ValueError(f'Database not found: {db_file}')
+    
     conn = None
     conn = sqlite3.connect(db_file)
     #print(f'Sqlite version: {sqlite3.sqlite_version}')
@@ -49,18 +53,17 @@ def create_db_and_table(db_file) -> sqlite3.Connection:
                                     Volume real
                                 ); """    
 
+    if not isinstance(db_file, str):
+        raise TypeError('Parameter not a string.')
     conn = None
-    try:
-        #conn = sqlite3.connect(db_file)
-        #print(f'Sqlite version: {sqlite3.sqlite_version}')
-        #cursor = conn.cursor()
-        conn, cursor = open_sqlite_db(db_file)
+    if not os.path.isfile(db_file):
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor() 
         cursor.execute(sql_create_prices_table)
-
-    except sqlite3.Error as e:
-        print(f'SQlite3 Error: {e}')
+        return conn
+    else:
+        raise ValueError(f'Database already exists: {db_file}')
     
-    return conn
 
 #
 # Save to specific file formats
@@ -97,8 +100,6 @@ def save_to_parquet(file_name, data_df):
 def load_OHLCV_from_db_for_symbols(db, symbols):
     ''' Return OHCLV price data for a list of symbols '''
     
-    if not os.path.isfile(db):
-        return None
     if not isinstance(symbols, list):
         return None
 
@@ -132,8 +133,6 @@ def optimize_column_types(df):
 
 def return_valid_symbols_from_list(symbols_list):
     db = 'DB/minute.sqlite'
-    if not os.path.isfile(db):
-        return None
     if not isinstance(symbols_list, list):
         return None
     db_conn, db_cursor = open_sqlite_db(db)
@@ -147,6 +146,11 @@ def return_valid_symbols_from_list(symbols_list):
     db_conn.close()
 
     return existing_symbols
+
+# def max_date_in_db():
+#     SELECT MAX (ord_date) AS "Max Date" 
+#     FROM orders;
+
 
 def generate_fake_data():
     ID =     ['20230428093000AAPL','20230428093100AAPL','20230428093200AAPL','20230428093300AAPL','20230428093400AAPL','20230428093500AAPL','20230428093600AAPL','20230428093700AAPL','20230428093000TSLA','20230428093100TSLA','20230428093200TSLA','20230428093300TSLA','20230428093400TSLA','20230428093500TSLA','20230428093600TSLA']
