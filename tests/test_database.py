@@ -186,6 +186,23 @@ def test_load_OHLCV_from_db_for_symbols_return_df():
     symbols = ['TSLA', 'AAPL']
     data = database.load_OHLCV_from_db_for_symbols(dbpath, symbols)
     assert data is not None
+    assert len(data) > 0
+    assert isinstance(data, pd.DataFrame)
+    assert 'Symbol' in data.columns
+    assert 'Open'   in data.columns
+    assert 'High'   in data.columns
+    assert 'Low'    in data.columns
+    assert 'Close'  in data.columns
+    assert 'Volume' in data.columns
+    print(data)
+
+def test_load_OHLCV_from_db_for_dates_return_df():
+    dbpath = 'DB/minute.sqlite'
+    dt_start = '2023-09-11 15:49:00'
+    dt_end = '2023-09-11 15:52:00'
+    data = database.load_OHLCV_from_db_for_dates(dbpath, dt_start=dt_start, dt_end=dt_end)
+    assert data is not None
+    assert len(data) > 0
     assert isinstance(data, pd.DataFrame)
     assert 'Symbol' in data.columns
     assert 'Open'   in data.columns
@@ -201,6 +218,7 @@ def test_optimize_column_types():
     data = database.load_OHLCV_from_db_for_symbols(dbpath, symbols)
     data = database.optimize_column_types(data)
     assert data is not None
+    assert len(data) > 0
     assert isinstance(data.Datetime.values[0], np.datetime64)
     assert pd.api.types.is_categorical_dtype(data.Symbol)
     assert data.Open.dtype == np.float32
@@ -237,3 +255,15 @@ def test_generate_fake_data():
     assert 'Low'    in data.columns
     assert 'Close'  in data.columns
     assert 'Volume' in data.columns    
+
+def test_max_date_in_db():
+    db_file = 'DB/minute.sqlite'
+    max_date = database.max_date_in_db(db_file)
+    print(f'Max date found in db: {max_date}, type: {type(max_date)}')
+    assert max_date is not None
+
+def test_min_date_in_db():
+    db_file = 'DB/minute.sqlite'
+    min_date = database.min_date_in_db(db_file)
+    print(f'Min date found in db: {min_date}, type: {type(min_date)}')
+    assert min_date is not None    

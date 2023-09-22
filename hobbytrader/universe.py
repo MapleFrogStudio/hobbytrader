@@ -1,143 +1,194 @@
+import os
 import json
 import pandas as pd
-import pandas_ta as ta
+import numpy as np
 
-class Indicators():
-    def SMA(self, universe, period=50):
-        SMA = pd.DataFrame()
-        for asset in universe.symbols:
-            df = universe.datas[universe.datas.Symbol == asset]
-            asset_sma = ta.sma(df["Close"], length=period)
-            # merge indicators for all assets to add a new column to universe datas
-            SMA = pd.concat([SMA, asset_sma]) 
-
-        return SMA        
-
-    def EMA(self, universe, period=50):
-        EMA = pd.DataFrame()
-        for asset in universe.symbols:
-            df = universe.datas[universe.datas.Symbol == asset]
-            asset_ema = ta.ema(df["Close"], length=period)
-            # merge indicators for all assets to add a new column to universe datas
-            EMA = pd.concat([EMA, asset_ema]) 
-
-        return EMA       
-
+from hobbytrader import database
 
 class TradeUniverse():
-    def __init__(self, datas=None):
-        self.symbols = None
-        self.datas = pd.DataFrame()
+    TU_DATA_LOADED_FAIL = 0
+    TU_DATA_LOADED_SUCCESS = 1
+    TU_DATA_LOADED_PARTIAL = 2
 
-        if not isinstance(datas, pd.core.frame.DataFrame):
-            fake_df = self.generate_fake_data()
-            self.add_datas(fake_df)
-            #self.datas = self.generate_fake_data()
-            self.fake_data = True
-        else:
-            if not self.valid_price_columns(datas):
-                raise TypeError(f"Minimum columns required ['Datetime', 'Symbol', 'Open', 'High', 'Low', 'Close', 'Volume'] found {[c for c in datas.columns]}")
-            self.datas = datas
-            self.fake_data = False
-
-        self._update_universe()
-
-    def add_datas(self, data_df):
-        ''' Add Price DataFrame for multiple symbols '''
-        if not self.valid_price_columns(data_df):
-            raise TypeError(f"Minimum columns required ['Datetime', 'Symbol', 'Open', 'High', 'Low', 'Close', 'Volume'] found {[c for c in data_df.columns]}")
-
-        self.datas = pd.concat([self.datas, data_df], ignore_index=True)
-        self._update_universe()
-
-
-    def _update_universe(self):
-        if self.symbols is None:
-            self.symbols = []
-
-        self.dates = self.datas.Datetime.values
-        tmp_symbols = self.datas.Symbol.unique()
-        new_symbols = [s for s in tmp_symbols if s not in self.symbols]
-        self.symbols.extend(new_symbols) # Preserves existing order of dataset
-        self.dt_min = self.dates.min()
-        self.dt_max = self.dates.max()
+    def __init__(self, symbols, load_data=True, db_path='DB/minute.sqlite', first_day=None):
+        self.symbols_requested = []
+        self._valid_symbols = None
         
-    def indicators(self):
-        self.I = Indicators()
+        # Sanity checks on constructor parameters
+        if not isinstance(db_path, str):
+            raise ValueError(f'{self.__class__}: Constructor db_path must be a string')
+        self.db_path = db_path
+        self.db_first_date = database.min_date_in_db(self.db_path)
+        self.db_last_date = database.max_date_in_db(self.db_path)
+
+        if not isinstance(symbols, list):
+            self.symbols_requested.append(symbols)
+        if not all(map(lambda s: isinstance(s, str), symbols)):
+            raise ValueError(f'{self.__class__}: Constructor only accepts list of strings')
+
+        if not isinstance(load_data, bool):
+            raise ValueError(f'{self.__class__}: Constructor load_data flag must be boolean')
+
+        self.reset_universe_meta_data()
+
+        # If sanity checks passed, then symbols is a list of strings
+        if len(self.symbols_requested) == 0:
+            self.symbols_requested += symbols
+
+        if load_data and self.found_in_db > 0:
+            self.load_universe_data()
+            self.update_universe_meta_data()
+
 
     def __json__(self):
-        '''Return a python dictionary'''
-        dt_min = self.dt_min
-        dt_max = self.dt_max
+        '''Return a python dictionary of relevant class attributes'''
+        if self.datas is None:
+            return None
         json_dict = {
-            'Records': len(self.datas),
-            'NumberOfSymbols': len(self.symbols),
-            'Symbols': self.symbols,
-            'Dates': len(self.dates),
-            'MinDate': dt_min,
-            'MaxDate': dt_max
+            "DatasRows": len(self.datas),
+            "DatesRange": {"First": self.dt_min, "Last":self.dt_max},
+            "Dates": self.dates,
+            "SymbolsRequested": self.symbols_requested,
+            "SymbolsLoaded": self.loaded_symbols,
+            "SymbolsNumber": len(self.loaded_symbols)
         }
         return json_dict
+    
+    def __str__(self):
+        return self.__json__()
 
     def to_json(self, indent=2):
         json_obj = self.__json__()
-        return json.dumps(json_obj, indent = indent, default=str) 
-    
-    def __str__(self):
-        return f"{self.__json__()}"
+        if json_obj is None:
+            return None
+        return json.dumps(json_obj, indent = indent, default=str)     
 
-    def valid_price_columns(self, data_df):
-        if not isinstance(data_df, pd.DataFrame):
-            return False
-        if len(data_df.columns) < 7:
-            return False
-        if not 'Datetime' in data_df.columns or\
-           not 'Symbol' in data_df.columns or\
-           not 'Open' in data_df.columns or\
-           not 'High' in data_df.columns or\
-           not 'Low' in data_df.columns or\
-           not 'Close' in data_df.columns or\
-           not 'Volume' in data_df.columns:
-            return False
+    @property
+    def load_status(self) -> bool:
+        if self.datas is None:
+            return TradeUniverse.TU_DATA_LOADED_FAIL    
+       
+        if self.datas is not None:
+            self.symbols_requested.sort()
+            if self.loaded_symbols == self.symbols_requested:
+                return TradeUniverse.TU_DATA_LOADED_SUCCESS
+            else:
+                return TradeUniverse.TU_DATA_LOADED_PARTIAL
+
+    @property
+    def found_in_db(self) -> int:
+        symbols_list = self.symbols_requested
+        if len(symbols_list) == 0:
+            self._valid_symbols = None
+            return 0
         
-        return True
+        valid_symbols = database.return_valid_symbols_from_list(symbols_list)
+        if len(valid_symbols) > 0:
+            self._valid_symbols = valid_symbols
+            return len(valid_symbols)
+        else:
+            self._valid_symbols = None
+            return 0
+
+    @property
+    def loaded_symbols(self) -> list:
+        if self.datas is None:
+            return None
+        symbols = self.datas.Symbol.unique().tolist()
+        symbols.sort()
+        return symbols
+
+    @property
+    def dt_min(self):
+        if self.datas is None:
+            return None
+        return self.dates.min()
+
+    @property
+    def dt_max(self):
+        if self.datas is None:
+            return None        
+        return self.dates.max()
+
+    @property
+    def date(self):
+        return self.dt_current
+
+    @property
+    def date_index(self):
+        if self.date is None:
+            return None
+        return np.where(self.dates == self.date)[0][0]
+
+    @date_index.setter
+    def date_index(self, value):
+        if value < 0:
+            value = 0
+        if value >= len(self.dates):
+            value = len(self.dates) - 1
+        self.dt_current = self.dates[value]
+
+    def load_universe_data(self):
+        '''Load Universe Data and update all meta_data
+        '''
+        if self._valid_symbols is None:
+            self.datas = None
+            self.reset_universe_meta_data()
+            return
+        
+        self.datas = database.load_OHLCV_from_db_for_symbols(self.db_path, self._valid_symbols)
+        self.datas = database.optimize_column_types(self.datas)        
+
+    def reset_universe_meta_data(self) -> None:
+        self.datas = None
+        self.dates = None
+        self.dt_current = None
+    
+    def update_universe_meta_data(self):
+        self.dates = np.unique(self.datas.Datetime.values)
+        self.dt_current = self.dates[0]
+
+    def prices_for_date(self, dt=None):
+        if dt is None:
+            return None
+        return self.datas.query("Datetime == @dt")
+    
+    def prices_for_dates(self, dt_start=None, dt_end=None):
+        if dt_start is None or dt_end is None:
+            return None
+        if dt_end <= dt_start:
+            return None
+
+        return self.datas.query('@dt_start <= Datetime <= @dt_end')
 
     def symbol_by_id(self, id:int):
         if not isinstance(id, int):
             return None
-        if id not in range(0,len(self.symbols)):
+        if id not in range(0,len(self.loaded_symbols)):
             return None
         
-        return self.symbols[id]
+        return self.loaded_symbols[id]
 
     def id_by_symbol(self, symbol:str):
         if not isinstance(symbol, str):
             return None
-        if symbol not in self.symbols:
+        if symbol not in self.loaded_symbols:
             return None
         
-        id = self.symbols.index(symbol)
-        return id
+        id = self.loaded_symbols.index(symbol)
+        return id  
 
-    def generate_fake_data(self):
-        ID =     ['20230428093000AAPL','20230428093100AAPL','20230428093200AAPL','20230428093300AAPL','20230428093400AAPL','20230428093500AAPL','20230428093600AAPL','20230428093700AAPL','20230428093000TSLA','20230428093100TSLA','20230428093200TSLA','20230428093300TSLA','20230428093400TSLA','20230428093500TSLA','20230428093600TSLA']
-        Dates =  ['2023-04-28 09:30:00','2023-04-28 09:31:00','2023-04-28 09:32:00','2023-04-28 09:33:00','2023-04-28 09:34:00','2023-04-28 09:35:00','2023-04-28 09:36:00','2023-04-28 09:37:00','2023-04-28 09:30:00','2023-04-28 09:31:00','2023-04-28 09:32:00','2023-04-28 09:33:00','2023-04-28 09:34:00','2023-04-28 09:35:00','2023-04-28 09:36:00']
-        Symbols= ['AAPL','AAPL','AAPL','AAPL','AAPL','AAPL','AAPL','AAPL','TSLA','TSLA','TSLA','TSLA','TSLA','TSLA','TSLA']
-        Close =  [168.910995483398,168.720001220703,168.710098266602,168.365005493164,168.509994506836,168.225296020508,168.320007324219,168.369995117188,160.895004272461,160.119995117188,159.5,158.735000610352,158.426803588867,158.429992675781,158.679992675781]
-        High =   [169.039993286133,168.960006713867,168.839996337891,168.710006713867,168.672607421875,168.550796508789,168.399993896484,168.399993896484,161.660003662109,161.039993286133,160.498901367188,159.539993286133,159.380004882813,158.979995727539,158.940002441406]
-        Low =    [168.259994506836,168.679992675781,168.53010559082,168.339996337891,168.369995117188,168.220001220703,168.160003662109,168.229995727539,160.675506591797,160.110000610352,159.369995117188,158.668502807617,158.339996337891,158.220001220703,158.389999389648]
-        Open =   [168.490005493164,168.910003662109,168.720001220703,168.710006713867,168.369995117188,168.505004882813,168.229995727539,168.320098876953,160.895004272461,160.895004272461,160.110000610352,159.539993286133,158.740005493164,158.401504516602,158.431503295898]
-        Volume = [2030045.0, 268035.0, 261020.0, 210307.0, 213959.0, 183608.0, 235840.0, 189275.0,2863529.0, 701779.0, 689402.0, 730131.0, 790879.0, 563280.0, 442715.0]
+    def next_dt(self):
+        index = self.date_index
+        if index >= len(self.dates)-1:
+            return False
+        self.dt_current = self.dates[index + 1]
+        return True
+    
+    def prev_dt(self):
+        dt_index = self.date_index
+        if dt_index <= 0:
+            return False
+        self.dt_current = self.dates[dt_index - 1]
+        return True
 
-        df = pd.DataFrame({
-            'Datetime': Dates, 'Symbol': Symbols, 'Close': Close, 'High': High, 'Low': Low, 'Open': Open, 'Volume': Volume
-        })
-        return df.copy()
-
-    def stats(self, symbols=None):
-        if symbols == None:
-            valid_symbols = self.symbols
-        else:
-            valid_symbols = [s for s in symbols if s in self.symbols]
-        
-        return valid_symbols

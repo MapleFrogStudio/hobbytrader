@@ -3,8 +3,8 @@
 import os
 import pandas as pd
 import sqlite3
+from dateutil.parser import parse
 
-from hobbytrader import DB_SQL_LIMIT
 from hobbytrader.github import Github
 
 def open_sqlite_db(db_file):
@@ -64,7 +64,6 @@ def create_db_and_table(db_file) -> sqlite3.Connection:
     else:
         raise ValueError(f'Database already exists: {db_file}')
     
-
 #
 # Save to specific file formats
 # 
@@ -103,17 +102,42 @@ def load_OHLCV_from_db_for_symbols(db, symbols):
     if not isinstance(symbols, list):
         return None
 
-    db_conn, _ = open_sqlite_db(db)
-    symbols_str = str(symbols)[1:-1]
-    #sql_str = f"SELECT * FROM prices WHERE Symbol in ({symbols_str}) ORDER BY Datetime, Symbol"
-    sql_str = f"SELECT * FROM prices WHERE Symbol in ({symbols_str}) "
-    if DB_SQL_LIMIT > 0:
-        sql_str += f' LIMIT {DB_SQL_LIMIT}'
+    db_conn, _ = open_sqlite_db(db)  
+    sql1 = f"SELECT * FROM prices WHERE Symbol IN ({', '.join(['?'] * len(symbols))}); "
+    df1 = pd.read_sql_query(sql1, db_conn, params=symbols)
 
-    prices_df = pd.read_sql(sql_str, db_conn)
-    prices_df = prices_df[['Datetime','Symbol','Open','High','Low','Close','Volume']]
+    df1 = df1[['Datetime','Symbol','Open','High','Low','Close','Volume']]
+    return df1
 
-    return prices_df
+def valid_date_format(dt):
+    if dt is not None:
+        try:
+            parse(dt)
+            return True
+        except ValueError:
+            raise ValueError("Invalid date format passed as parameter")  
+    else:
+        return False  
+
+#TODO: Add load_OHCLV_from_db_for_dates.....
+def load_OHLCV_from_db_for_dates(db, dt_start=None, dt_end=None):
+    ''' Return OHCLV price data for a range of dates '''
+
+    if not valid_date_format(dt_start):
+        dt_start = min_date_in_db(db).strftime('%Y-%m-%d %H:%M:%S')
+    if not valid_date_format(dt_end):
+        dt_end = max_date_in_db(db).strftime('%Y-%m-%d %H:%M:%S')
+
+    #dt_start = '2023-09-11 15:49:00'
+    #dt_end = '2023-09-11 15:52:00'
+
+    db_conn, _ = open_sqlite_db(db)  
+    sql1 = f"SELECT * FROM prices WHERE Datetime >= :dt_start AND Datetime <= :dt_end;"
+    df1 = pd.read_sql_query(sql1, db_conn, params={"dt_start":dt_start, "dt_end":dt_end})
+
+    df1 = df1[['Datetime','Symbol','Open','High','Low','Close','Volume']]
+    return df1
+
 
 def optimize_column_types(df):
     '''Cast each column to smaller types for memory optimization '''
@@ -147,9 +171,19 @@ def return_valid_symbols_from_list(symbols_list):
 
     return existing_symbols
 
-# def max_date_in_db():
-#     SELECT MAX (ord_date) AS "Max Date" 
-#     FROM orders;
+def max_date_in_db(db_file):
+    conn, cursor = open_sqlite_db(db_file)
+    sql_query = 'SELECT MAX(Datetime) FROM prices'
+    cursor.execute(sql_query)
+    max_date = [row[0] for row in cursor.fetchall()]
+    return pd.to_datetime(max_date[0])
+
+def min_date_in_db(db_file):
+    conn, cursor = open_sqlite_db(db_file)
+    sql_query = 'SELECT MIN(Datetime) FROM prices'
+    cursor.execute(sql_query)
+    min_date = [row[0] for row in cursor.fetchall()]
+    return pd.to_datetime(min_date[0])
 
 
 def generate_fake_data():
