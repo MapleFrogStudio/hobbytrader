@@ -1,120 +1,294 @@
+'''Test script for TradeUniverse. Assumes example/build_db was run and roduced a database called DB/minute.sqlite'''
 import pytest
-import pandas as pd
-
 from hobbytrader.universe import TradeUniverse
 
-@pytest.fixture(scope="session")
-def test_data():        
-    ID =     ['20230428093000AAPL','20230428093100AAPL','20230428093200AAPL','20230428093300AAPL','20230428093400AAPL','20230428093500AAPL','20230428093600AAPL','20230428093700AAPL','20230428093000TSLA','20230428093100TSLA','20230428093200TSLA','20230428093300TSLA','20230428093400TSLA','20230428093500TSLA','20230428093600TSLA']
-    Dates =  ['2023-04-28 09:30:00','2023-04-28 09:31:00','2023-04-28 09:32:00','2023-04-28 09:33:00','2023-04-28 09:34:00','2023-04-28 09:35:00','2023-04-28 09:36:00','2023-04-28 09:37:00','2023-04-28 09:30:00','2023-04-28 09:31:00','2023-04-28 09:32:00','2023-04-28 09:33:00','2023-04-28 09:34:00','2023-04-28 09:35:00','2023-04-28 09:36:00']
-    Symbols= ['AAPL','AAPL','AAPL','AAPL','AAPL','AAPL','AAPL','AAPL','TSLA','TSLA','TSLA','TSLA','TSLA','TSLA','TSLA']
-    Close =  [168.910995483398,168.720001220703,168.710098266602,168.365005493164,168.509994506836,168.225296020508,168.320007324219,168.369995117188,160.895004272461,160.119995117188,159.5,158.735000610352,158.426803588867,158.429992675781,158.679992675781]
-    High =   [169.039993286133,168.960006713867,168.839996337891,168.710006713867,168.672607421875,168.550796508789,168.399993896484,168.399993896484,161.660003662109,161.039993286133,160.498901367188,159.539993286133,159.380004882813,158.979995727539,158.940002441406]
-    Low =    [168.259994506836,168.679992675781,168.53010559082,168.339996337891,168.369995117188,168.220001220703,168.160003662109,168.229995727539,160.675506591797,160.110000610352,159.369995117188,158.668502807617,158.339996337891,158.220001220703,158.389999389648]
-    Open =   [168.490005493164,168.910003662109,168.720001220703,168.710006713867,168.369995117188,168.505004882813,168.229995727539,168.320098876953,160.895004272461,160.895004272461,160.110000610352,159.539993286133,158.740005493164,158.401504516602,158.431503295898]
-    Volume = [2030045.0, 268035.0, 261020.0, 210307.0, 213959.0, 183608.0, 235840.0, 189275.0,2863529.0, 701779.0, 689402.0, 730131.0, 790879.0, 563280.0, 442715.0]
+@pytest.fixture()
+def not_loaded_universe():
+    symbols = ['TSLA','AAPL']
+    #symbols = ['AAPL', 'TSLA']
+    u = TradeUniverse(symbols, load_data=False)    
+    return symbols, u
 
-    df = pd.DataFrame({
-        'Datetime': Dates, 'Symbol': Symbols, 'Close': Close, 'High': High, 'Low': Low, 'Open': Open, 'Volume': Volume
-    })
-    return df.copy()
+@pytest.fixture()
+def loaded_universe():
+    symbols = ['TSLA','AAPL']
+    u = TradeUniverse(symbols, load_data=True)    
+    return symbols, u 
 
-@pytest.fixture(scope="session")
-def test_one_symbol():
-    ID =     ['20230428093000AMZN','20230428093100AMZN','20230428093200AMZN','20230428093300AMZN','20230428093400AMZN']
-    Dates =  ['2023-04-28 09:30:00','2023-04-28 09:31:00','2023-04-28 09:32:00','2023-04-28 09:33:00','2023-04-28 09:34:00']
-    Symbols= ['AMZN','AMZN','AMZN','AMZN','AMZN']
-    Close =  [268.910995483398,268.720001220703,268.71009826660,268.365005493164,268.509994506836]
-    High =   [269.039993286133,268.960006713867,268.83999633789,268.710006713867,268.672607421875]
-    Low =    [268.259994506836,268.679992675781,268.53010559082,268.339996337891,268.369995117188]
-    Open =   [268.490005493164,268.910003662109,268.72000122070,268.710006713867,268.369995117188]
-    Volume = [2030045.0, 268035.0, 261020.0, 210307.0, 213959.0]
+@pytest.fixture()
+def empty_universe():
+    symbols = ['NoGood1','NoGood2']
+    u = TradeUniverse(symbols, load_data=False)    
+    return symbols, u
 
-    df = pd.DataFrame({
-        'Datetime': Dates, 'Symbol': Symbols, 'Close': Close, 'High': High, 'Low': Low, 'Open': Open, 'Volume': Volume
-    })
-    return df.copy()
+@pytest.fixture()
+def partial_universe():
+    symbols = ['TSLA','AAPL', 'NoGood']
+    u = TradeUniverse(symbols, load_data=True)    
+    return symbols, u
 
 
 
-def test_TradeUniverse_init():
-    # Test with module fake data
-    u = TradeUniverse(datas=None)
-    assert u is not None
-    assert u.fake_data is True
-    assert u.dates is not None
-    assert len(u.symbols) == 2
-
-def test_TradeUniverse_with_data(test_data):
-    u = TradeUniverse(datas=test_data)
-    assert u is not None
-    assert u.fake_data is False
-    assert u.dates is not None
-    assert len(u.symbols) == 2    
-
-def test_TradeUniverse_no_dataframe():
-    invalid_data = ['item1','item2']
-    u = TradeUniverse(datas=invalid_data)
-    assert u is not None
-
-def test_TradeUniverse_with_bad_data(test_data):
-    bad_data = test_data.drop(columns=['Volume'])
+# SERIES OF TESTS TO CHECK contrutor without loading all the data
+def test_TradeUniverse_constructor_no_parameters():
     with pytest.raises(TypeError):
-        u = TradeUniverse(datas=bad_data)
+        u = TradeUniverse()
 
-def test_valid_price_columns_fail(test_data):
-    bad_data = test_data.drop(columns=['Volume'])
-    bad_data['fake_col1'] = None
-    bad_data['fake_col2'] = None
-    bad_data['fake_col3'] = None
-    u = TradeUniverse(test_data) # Create a TradeUniverse object with valid info
-    validation = u.valid_price_columns(bad_data)
-    assert validation == False
+def test_TradeUniverse_constructor_with_list():
+    db = 'DB/minute.sqlite'
+    symbols = ['AAPL','TSLA']
+    u = TradeUniverse(symbols, load_data=False, db_path=db)
+    assert u is not None
+    assert u.db_path == db
+    assert u.datas is None
+    assert u.load_status == TradeUniverse.TU_DATA_LOADED_FAIL
+    assert len(u.symbols_requested) == 2
 
-def test_valid_price_columns_no_dataframe(test_data):
-    u = TradeUniverse(test_data) # Create a TradeUniverse object with valid info
-    not_a_dataframe = ['invalid_item']
-    validation = u.valid_price_columns(not_a_dataframe)
-    assert validation == False
 
-def test__json___dict_returned(test_data):
-    u = TradeUniverse(test_data)
-    json_dict = u.__json__()
-    assert json_dict is not None
-    assert isinstance(json_dict, dict)
+def test_TradeUniverse_constructor_with_string():
+    u = TradeUniverse('TSLA', load_data=False)
+    assert u is not None
 
-def test__str__returned_string(test_data):
-    u = TradeUniverse(test_data)
-    result = u.__str__()
-    assert result is not None
-    assert isinstance(result, str)
+@pytest.mark.parametrize("non_strings_list",[
+    (['TSLA',1]), (1,'TSLA'), ('TSLA',True)
+])
+def test_TradeUniverse_constructor_non_string_in_list(non_strings_list):
+    with pytest.raises(ValueError):
+        u = TradeUniverse(non_strings_list, load_data=False)
 
-def test_to_json_returned_string(test_data):
-    u = TradeUniverse(test_data)
-    result = u.to_json()
-    assert result is not None
-    assert isinstance(result, str)
+def test_TradeUniverse_constructor_load_data_non_boolean():
+    with pytest.raises(ValueError):
+        u = TradeUniverse(['TSLA','AAPL'], load_data=10)
 
-def test_symbol_by_id(test_data):
-    u = TradeUniverse(datas=test_data)
-    assert u.symbol_by_id(0) == 'AAPL'
-    assert u.symbol_by_id(4) is None
-    assert u.symbol_by_id('not an int') == None
+def test_TradeUniverse_constructor_db_path_non_string():
+    with pytest.raises(ValueError):
+        u = TradeUniverse(['TSLA','AAPL'], db_path=10)
 
-def test_id_by_symbol(test_data):
-    u = TradeUniverse(datas=test_data)
-    assert u.id_by_symbol('AAPL') == 0
-    assert u.id_by_symbol('NonExistant') == None
+
+# TEST UNIVERSE with data loading and all stats
+def test_load_full_universe(loaded_universe):
+    symbols, u = loaded_universe
+
+    assert u is not None
+    assert u.symbols_requested == symbols
+    assert u.loaded_symbols.sort() == symbols.sort()
+    assert u.load_status == TradeUniverse.TU_DATA_LOADED_SUCCESS
+    assert u.datas is not None
+
+def test_partial_load_full_universe():
+    db = 'DB/minute.sqlite'
+    symbols = ['AAPL','TSLA', 'NoGood']
+    u = TradeUniverse(symbols, load_data=True, db_path=db)
+    assert u.load_status == TradeUniverse.TU_DATA_LOADED_PARTIAL    
+
+# SERIES OF TESTS to check TradeUniverse methods
+@pytest.mark.parametrize("symbols_to_check, expected", [
+    (['NoGood1', 'NoGood2'], 0),
+    (['TSLA','AAPL'], 2), 
+    (['AAPL','TSLA'], 2),
+    (['AAPL'], 1),
+    (['TSLA','NoGood'], 1),
+    ([], 0)
+])
+def test_symbols_exist_in_db(symbols_to_check, expected):
+    u = TradeUniverse(symbols_to_check, load_data=False) # Only create the class do not load anything
+    found_in_db = u.found_in_db
+    print(f'Check_status: {found_in_db}')
+    print(f'Valid symbols: {u._valid_symbols}')
+    assert found_in_db == expected
+    
+
+def test_load_symbols_data_from_db(not_loaded_universe):
+    _, u = not_loaded_universe
+    found_in_db = u.found_in_db
+    assert u is not None
+    assert found_in_db > 0
+    # We are ready to test our load function (we now assume our symbols are in DB)
+    u.load_universe_data()
+    assert u.datas is not None
+
+def test_fail_load_symbols_data_from_db(empty_universe):
+    symbols, u = empty_universe
+    u.load_universe_data()
+    assert u.load_status == TradeUniverse.TU_DATA_LOADED_FAIL
+    assert u.datas == None
+    assert u.loaded_symbols is None
+    assert u.dt_min is None
+    assert u.dt_max is None
+    print(f'Found in DB: {u.found_in_db}')
+
+def test_properties_with_loaded_data(loaded_universe):
+    symbols, u = loaded_universe
+    assert u.load_status is not None
+    assert u.found_in_db == len(symbols)
+    assert len(u.loaded_symbols) == len(symbols)
+    assert u.dt_min is not None
+    assert u.dt_max is not None
+
+def test_prices_for_date(loaded_universe):
+    symbols, u = loaded_universe
+    dt = u.dt_min
+    print(f'----------------- Min date : {dt}')
+    price_rows = u.prices_for_date(dt)
+    assert len(price_rows) == len(symbols)
+
+def test_fail_prices_for_date(loaded_universe):
+    _, u = loaded_universe
+    result = u.prices_for_date(None)
+    assert result is None
+
+def test_prices_for_dates(loaded_universe):
+    symbols, u = loaded_universe
+    dt1 = u.dates[0]
+    dt2 = u.dates[1]
+    print(f'----------------- Date1: {dt1}, Date2: {dt2}')
+    price_rows = u.prices_for_dates(dt1, dt2)
+    assert len(price_rows) == len(symbols)*2    
+
+def test_fail_prices_for_dates(loaded_universe):
+    symbols, u = loaded_universe
+    dt1 = u.dates[0]
+    dt2 = u.dates[1]
+    result1 = u.prices_for_dates(None, None)
+    assert result1 is None
+    result2 = u.prices_for_dates(None, dt2)
+    assert result2 is None
+    result3 = u.prices_for_dates(dt1, None)
+    assert result3 is None
+    result4 = u.prices_for_dates(dt2, dt1)
+    assert result4 is None
+
+def test_symbol_by_id(loaded_universe):
+    symbols, u = loaded_universe
+    symbols.sort()
+    symbol_id = 1
+    returned_symbol = u.symbol_by_id(symbol_id)
+    print(f'\nSymbol chosen: {symbol_id}')
+    print(f'Returned symbol: {returned_symbol}')
+    print(f'loaded symbols: {u.loaded_symbols}')
+    assert returned_symbol == symbols[symbol_id]
+
+def test_symbols_by_id_not_an_int(loaded_universe):
+    symbols, u = loaded_universe
+    returned_symbol = u.symbol_by_id('notint')
+    assert returned_symbol is None
+
+def test_symbols_by_id_out_of_range(loaded_universe):
+    symbols, u = loaded_universe
+    returned_symbol = u.symbol_by_id(len(u.loaded_symbols))
+    assert returned_symbol is None
+    
+def test_id_by_symbol(loaded_universe):
+    symbols, u = loaded_universe
+    symbols.sort()
+    id = 1
+    symbol = symbols[id]
+
+    returned_id = u.id_by_symbol(symbol)
+    print(f'\nSymbol chosen: {symbol}, for id:{id}')
+    print(f'Returned symbol: {returned_id}')
+    print(f'loaded symbols: {u.loaded_symbols}')
+    assert returned_id == id
+
+def test_id_by_symnol_not_a_string(loaded_universe):
+    symbol, u = loaded_universe
     not_a_string = 10
-    assert u.id_by_symbol(not_a_string) == None
+    id = u.id_by_symbol(not_a_string)
+    assert id == None
 
-def test_add_datas_bad_parameter(test_data):
-    u = TradeUniverse(test_data)
-    not_a_dataframe = ['item1']
-    with pytest.raises(AttributeError):
-        u.add_datas(not_a_dataframe)
+def test_id_by_symbol_not_found(loaded_universe):
+    symbol, u = loaded_universe
+    not_foud_symbol = 'NoGood'
+    id = u.id_by_symbol(not_foud_symbol)
+    assert id == None
 
-def test_add_datas_one_symbol(test_data, test_one_symbol):
-    u = TradeUniverse(test_data)
-    #u.add_datas(test_one_symbol)
-    #assert len(u.symbols) == 3
+def test_date_properties(loaded_universe):
+    symbols, u = loaded_universe
+    print(f'\nLoaded universe, date value: {u.date}')
+    print(f'Loaded universe, date index: {u.date_index}')
+    assert u.date == u.dates[0]
+    assert u.date_index == 0
+    success1 = u.next_dt()
+    print(f'\nLoaded universe, date value: {u.date}')
+    print(f'Loaded universe, date index: {u.date_index}')
+    assert success1
+    assert u.date == u.dates[1]
+    assert u.date_index == 1
+    success2 = u.prev_dt()
+    print(f'\nLoaded universe, date value: {u.date}')
+    print(f'Loaded universe, date index: {u.date_index}')
+    assert success2
+    assert u.date == u.dates[0]
+    assert u.date_index == 0
+    assert u.prev_dt() is False  # Current date is already at index 0
+
+def test_date_index_no_dates_loaded(empty_universe):
+    _, u = empty_universe
+    u.dt_current = None # Force an incohernt config
+    returned_index = u.date_index
+    assert returned_index is None
+
+def test_date_index_setter(loaded_universe):
+    _, u = loaded_universe
+    print(f'\nCurrent default date: {u.date}')
+    print(f'Current date index: {u.date_index}')
+    new_index = 60 # One hour later
+    u.date_index = new_index
+    assert u.date_index == new_index
+    print(f'New date: {u.date}')
+    print(f'New date_index: {u.date_index}')
+    u.date_index = -1
+    assert u.date_index == 0
+    u.date_index = len(u.dates)
+    assert u.date_index == len(u.dates) - 1
+
+def test_next_dt_on_last_index(loaded_universe):
+    symbols,u = loaded_universe
+    last_date_index = len(u.dates)-1
+    u.date_index = last_date_index
+    print(f'\nCurrent date: {u.date}, at index: {u.date_index} where total dates: {len(u.dates)}')
+    success = u.next_dt()
+    assert not success
+
+def test_json_returned(loaded_universe):
+    symbols,u = loaded_universe
+    json_dict = u.__json__()
+    print(f'\nUniverse Json:{json_dict}')
+    assert json_dict is not None
+
+def test_json_empty_universe(empty_universe):
+    symbols,u = empty_universe
+    json_dict = u.__json__()
+    print(f'\nUniverse Json:{json_dict}')
+    assert json_dict is None
+
+def test_json_partial_universe(partial_universe):
+    symbols,u = partial_universe
+    json_dict = u.__json__()
+    print(f'\nUniverse Json:{json_dict}')
+    assert json_dict is not None
+
+def test_to_json_string_returned(loaded_universe):
+    symbols,u = loaded_universe
+    json_str = u.to_json()
+    print(f'Universe symbols: {u.loaded_symbols}')
+    print(f'Json string (to_json): {json_str}')
+    assert 'SymbolsNumber' in json_str
+
+def test_fail_to_json_string_returned(empty_universe):
+    symbols,u = empty_universe
+    json_str = u.to_json()
+    print(f'Universe symbols: {u.loaded_symbols}')
+    print(f'Json string (to_json): {json_str}')
+    assert json_str is None
+
+def test__str__loaded(loaded_universe):
+    symbols,u = loaded_universe
+    json_str = u.__str__()
+    print(json_str)
+
+def test_fail__str__loaded(empty_universe):
+    symbols,u = empty_universe
+    json_str = u.__str__()
+    print(json_str)    
+    assert json_str is None
