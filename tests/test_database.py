@@ -8,6 +8,8 @@ import pytest
 from hobbytrader.github import Github
 from hobbytrader import database
 
+import time
+
 @pytest.fixture(scope="session")
 def file_links():
     repo = 'DATASETS'
@@ -44,17 +46,14 @@ def test_generate_ID(load_price_data):
     data = database.generate_ID(data)  
     assert 'ID' in data.columns
 
-def test_open_sqlite_db():
-    db_file = 'tests/test.sqlite'
-    conn, cursor = database.open_sqlite_db(db_file)
-    assert conn is not None
-    assert cursor is not None
-    conn.close()
-    if os.path.isfile(db_file):
-        os.remove(db_file)
-    assert not os.path.isfile(db_file)
+def test_open_sqlite_db_file_not_found():
+    test_file = 'tests/test.sqlite'
+    if os.path.isfile(test_file):
+        os.remove(test_file)    
+    with pytest.raises(ValueError):
+        conn, cursor = database.open_sqlite_db(test_file)
 
-def test_create_db_and_table_file_created():
+def test_create_db_and_table_file_success():
     test_file = 'tests/test.sqlite'
     db_connection = database.create_db_and_table(test_file)
     assert db_connection is not None
@@ -62,6 +61,22 @@ def test_create_db_and_table_file_created():
     if os.path.isfile(test_file):
         os.remove(test_file)
     assert not os.path.isfile(test_file)
+
+def test_create_db_and_table_file_fail():
+    test_file = 'tests/test.sqlite'
+    conn = sqlite3.connect(test_file)
+    conn.close()
+    if os.path.isfile(test_file):
+        with pytest.raises(ValueError):
+            db_connection = database.create_db_and_table(test_file)
+    else:
+        # If file is note created we cannot run this test (should never happen)
+        assert False # pragma: no cover
+
+    if os.path.isfile(test_file):
+        os.remove(test_file)
+    assert not os.path.isfile(test_file)
+
 
 def test_create_db_and_table_conflict_on_insert():
     test_file = 'tests/test.sqlite3'
@@ -116,9 +131,11 @@ def test_save_to_sqlite(load_price_data):
         os.remove(db_name)
 
 def test_save_to_sqlite_no_file(load_price_data):
+    # Make sure there is no folder called NOFOLDER in project root
     db_name = 'NOFOLDER/nofile.sqlite'
     data_df = load_price_data.copy()
-    database.save_to_sqlite(db_name, data_df)    
+    with pytest.raises(sqlite3.OperationalError):
+        database.save_to_sqlite(db_name, data_df)    
 
 def test_save_to_csv(load_price_data):
     file_name = 'test.csv'
@@ -154,8 +171,9 @@ def test_save_to_parquet(load_price_data):
 
 def test_load_OHLCV_from_db_for_symbols_noDBfile():
     dbpath = 'DB/nofile.sqlite'
-    data = database.load_OHLCV_from_db_for_symbols(dbpath, ['TSLA'])
-    assert data is None
+    with pytest.raises(ValueError):
+        data = database.load_OHLCV_from_db_for_symbols(dbpath, ['TSLA'])
+
 
 def test_load_OHLCV_from_db_for_symbols_not_a_list():
     dbpath = 'DB/minute.sqlite'
@@ -168,6 +186,23 @@ def test_load_OHLCV_from_db_for_symbols_return_df():
     symbols = ['TSLA', 'AAPL']
     data = database.load_OHLCV_from_db_for_symbols(dbpath, symbols)
     assert data is not None
+    assert len(data) > 0
+    assert isinstance(data, pd.DataFrame)
+    assert 'Symbol' in data.columns
+    assert 'Open'   in data.columns
+    assert 'High'   in data.columns
+    assert 'Low'    in data.columns
+    assert 'Close'  in data.columns
+    assert 'Volume' in data.columns
+    print(data)
+
+def test_load_OHLCV_from_db_for_dates_return_df():
+    dbpath = 'DB/minute.sqlite'
+    dt_start = '2023-09-11 15:49:00'
+    dt_end = '2023-09-11 15:52:00'
+    data = database.load_OHLCV_from_db_for_dates(dbpath, dt_start=dt_start, dt_end=dt_end)
+    assert data is not None
+    assert len(data) > 0
     assert isinstance(data, pd.DataFrame)
     assert 'Symbol' in data.columns
     assert 'Open'   in data.columns
@@ -183,6 +218,7 @@ def test_optimize_column_types():
     data = database.load_OHLCV_from_db_for_symbols(dbpath, symbols)
     data = database.optimize_column_types(data)
     assert data is not None
+    assert len(data) > 0
     assert isinstance(data.Datetime.values[0], np.datetime64)
     assert pd.api.types.is_categorical_dtype(data.Symbol)
     assert data.Open.dtype == np.float32
@@ -208,3 +244,26 @@ def test_return_valid_symbols_from_list_No_symbols_found():
     valid_symbols = database.return_valid_symbols_from_list(requested_symbols)
     assert valid_symbols is not None
     assert len(valid_symbols) == 0
+
+def test_generate_fake_data():
+    data = database.generate_fake_data()
+    assert data is not None
+    assert isinstance(data, pd.DataFrame)
+    assert 'Symbol' in data.columns
+    assert 'Open'   in data.columns
+    assert 'High'   in data.columns
+    assert 'Low'    in data.columns
+    assert 'Close'  in data.columns
+    assert 'Volume' in data.columns    
+
+def test_max_date_in_db():
+    db_file = 'DB/minute.sqlite'
+    max_date = database.max_date_in_db(db_file)
+    print(f'Max date found in db: {max_date}, type: {type(max_date)}')
+    assert max_date is not None
+
+def test_min_date_in_db():
+    db_file = 'DB/minute.sqlite'
+    min_date = database.min_date_in_db(db_file)
+    print(f'Min date found in db: {min_date}, type: {type(min_date)}')
+    assert min_date is not None    
