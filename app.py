@@ -2,8 +2,9 @@ import json
 import psutil
 from hobbytrader import database
 from hobbytrader.symbols import grab_tsx_stocks_from_github_mfs_dataset as tsx_symbols
-from hobbytrader.trades import Trades
+from hobbytrader import symbols
 from hobbytrader.universe import TradeUniverse
+from hobbytrader import scrappers
 from datetime import datetime
 
 def print_mem(msg):
@@ -19,14 +20,13 @@ def print_mem(msg):
     print(f"Free Memory: {free_memory / (1024 ** 3):.2f} GB")  
     print(f'--------------------------------------------------------------------')
 
-if __name__ == '__main__':
-    print_mem('Start of program')
+def main():
     db_path = 'DB/minute.sqlite'
     symbols = ['TSLA', 'AAPL', 'GIB-A.TO']
 
-    tsx = tsx_symbols()
-    symbols = tsx.Yahoo.tolist()
-    
+    #tsx = tsx_symbols()
+    #symbols = tsx.Yahoo.tolist()
+    print_mem('Data loading please wait...')
     u = TradeUniverse(symbols, load_data=True, db_path=db_path)
     print_mem('Data loaded...')
     print(f'Symbols: {symbols}')
@@ -44,3 +44,28 @@ if __name__ == '__main__':
             break
         print_mem(f'Index loop {u.date_index}...')
 
+def scrapers():
+    scrape = scrappers.ADVFN()
+    df = scrape.scrape_data()
+    print(df)
+    scrape.to_csv()
+    input('Press ENTER To continue')
+
+    scrape = scrappers.FMPAD()
+    df = scrape.scrape_data()
+    print(df)
+    scrape.to_csv()
+    input('Press ENTER To continue')
+
+    scrape = scrappers.wikipedia_SP500()
+    df = scrape.scrape_data()
+    print(df)
+    scrape.to_csv()
+    print(scrape.history())    
+    input('Press ENTER To continue')
+
+if __name__ == '__main__':
+    print_mem('Start of program')
+    
+    scrapers()
+    

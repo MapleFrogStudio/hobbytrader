@@ -24,16 +24,31 @@ from urllib.request import urlopen
 
 from hobbytrader import FMPAD_API_KEY
 
-#from dotenv import load_dotenv
-
-#load_dotenv()
-
 
 class Scrapper(ABC):
+    def __init__(self):
+        self.symbols_df = None
+        self.to_csv_name = None
+
     @abstractmethod
     def scrape_data(self):
         pass                                        # pragma: no cover (skip line from coverage test package)
 
+    def order_columns(self):
+        columns = self.symbols_df.columns.to_list()
+        columns.remove('Symbol')
+        columns.remove('Name')
+        columns.remove('Yahoo')
+        new_column_order = ['Symbol','Name','Yahoo']
+        new_column_order = new_column_order + columns
+        self.symbols_df = self.symbols_df[new_column_order]
+
+    def to_csv(self):
+        if self.to_csv_name is None:
+            raise ValueError('to_csv_name is not defined, cannot write data')
+        
+        self.order_columns()
+        self.symbols_df.to_csv(self.to_csv_name, index=False)        
 
 class ADVFN(Scrapper):
     def __init__(self, exchange='tsx', country='canada') -> None:
@@ -49,6 +64,8 @@ class ADVFN(Scrapper):
             'tsxv'   : '.V',
             'nasdaq' : ''
         }
+        self.symbols_df = None
+        self.to_csv_name = f'advfn-{self.exchange}.csv'
 
     
     def letters_list(self) -> list:
@@ -95,30 +112,27 @@ class ADVFN(Scrapper):
                 symbols_list.append(symbol_info)
                 #time.sleep(1)
 
-        symbols_df = pd.DataFrame(symbols_list)
-        return symbols_df
+        self.symbols_df = pd.DataFrame(symbols_list)
+        self.symbols_df = self.add_yahoo_symbol(self.symbols_df)
+        return self.symbols_df
 
     def add_yahoo_symbol(self, symbols_df):
         suffix = self.yahoo_suffix[self.exchange]
         symbols_df['Yahoo'] = [f"{s.replace('.', '-')}{suffix}" for s in symbols_df.Symbol]
         return symbols_df
 
-    def to_csv(self, symbols_df):
-        symbols_df.to_csv(f'advfn-{self.exchange}.csv', index=False)
-
-    def scrape_and_save_to_csv(self):
-        symbols = s.scrape_data()                   # pragma: no cover (skip line from coverage test package)
-        symbols = s.add_yahoo_symbol(symbols)       # pragma: no cover (skip line from coverage test package)
-        s.to_csv(symbols)                           # pragma: no cover (skip line from coverage test package)
 
 class FMPAD(Scrapper):
     def __init__(self, exchange='TSX') -> None:
         #self.api_key = os.getenv('FMPAD_API_KEY')
         self.api_key = FMPAD_API_KEY
-        FMPAD_API_KEY
+        if self.api_key is None:
+            raise ValueError('No API KEY defined for FMPAD Website (please create an FMPAD_API_KEY environment variable).')
         self.exchange = exchange
         self.url_base = f'https://financialmodelingprep.com/api/v3/stock-screener?apikey={self.api_key}&exchange='
         print(self.api_key)
+        self.symbols_df = None
+        self.to_csv_name = f'fmpad-{self.exchange}.csv'
 
     def rename_columns(self, data_df):
         data_df.rename(columns={
@@ -150,8 +164,37 @@ class FMPAD(Scrapper):
         data_df = self.get_jsonparsed_data()
         data_df = self.rename_columns(data_df)
         data_df['Yahoo'] = data_df.Symbol
-        return data_df
+        self.symbols_df = data_df
+        return self.symbols_df
 
-if __name__ == '__main__':
-    s = ADVFN(exchange='nasdaq', country='canada')  # pragma: no cover (skip line from coverage test package)
-    s.scrape_and_save_to_csv()                      # pragma: no cover (skip line from coverage test package)
+
+class wikipedia_SP500(Scrapper):
+    def __init__(self):
+        # wiki_url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies#S&P_500_component_stocks'
+        self.wiki_url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+        self.symbols_df = None
+        self.to_csv_name = 'wikipedia-sp500.csv'
+
+    def scrape_data(self):
+        res = requests.get(self.wiki_url).content
+        tickers = pd.read_html(io.StringIO(res.decode("utf-8")))
+        tickers_df = tickers[0]
+        tickers_df['Yahoo'] = [s.replace('.', '-') for s in tickers_df.Symbol]
+        tickers_df = tickers_df.rename(columns={'Security': 'Name'})
+        self.symbols_df = tickers_df
+        return self.symbols_df
+
+
+    def history(self):
+        wiki_url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+        s = requests.get(wiki_url).content
+        history = pd.read_html(io.StringIO(s.decode("utf-8")))
+        history_df = history[1]
+        history_df = history_df.reset_index()
+
+        history_df.columns = [f'{level1}_{level2}' if level2 else level1 for level1, level2 in history_df.columns]
+        history_df.rename(columns={'Date_Date': 'Date'}, inplace=True)
+        history_df.drop(columns='index', inplace=True)
+
+        return history_df        
+

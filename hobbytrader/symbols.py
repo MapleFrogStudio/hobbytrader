@@ -15,28 +15,28 @@ import io
 #     return tickers_df
 
 
-def grab_SP500_from_wikipedia():
-    # wiki_url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies#S&P_500_component_stocks'
-    wiki_url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+# def grab_SP500_from_wikipedia():
+#     # wiki_url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies#S&P_500_component_stocks'
+#     wiki_url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 
-    s = requests.get(wiki_url).content
-    tickers = pd.read_html(io.StringIO(s.decode("utf-8")))
-    tickers_df = tickers[0]
-    tickers_df['Yahoo'] = [s.replace('.', '-') for s in tickers_df.Symbol]
-    return tickers_df
+#     s = requests.get(wiki_url).content
+#     tickers = pd.read_html(io.StringIO(s.decode("utf-8")))
+#     tickers_df = tickers[0]
+#     tickers_df['Yahoo'] = [s.replace('.', '-') for s in tickers_df.Symbol]
+#     return tickers_df
 
-def grab_SP500_history_from_wikipedia():
-    wiki_url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
-    s = requests.get(wiki_url).content
-    history = pd.read_html(io.StringIO(s.decode("utf-8")))
-    history_df = history[1]
-    history_df = history_df.reset_index()
+# def grab_SP500_history_from_wikipedia():
+#     wiki_url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+#     s = requests.get(wiki_url).content
+#     history = pd.read_html(io.StringIO(s.decode("utf-8")))
+#     history_df = history[1]
+#     history_df = history_df.reset_index()
 
-    history_df.columns = [f'{level1}_{level2}' if level2 else level1 for level1, level2 in history_df.columns]
-    history_df.rename(columns={'Date_Date': 'Date'}, inplace=True)
-    history_df.drop(columns='index', inplace=True)
+#     history_df.columns = [f'{level1}_{level2}' if level2 else level1 for level1, level2 in history_df.columns]
+#     history_df.rename(columns={'Date_Date': 'Date'}, inplace=True)
+#     history_df.drop(columns='index', inplace=True)
 
-    return history_df
+#     return history_df
 
 def grab_SP500_from_github_mfs_dataset() -> pd.DataFrame:
     url = "https://raw.githubusercontent.com/MapleFrogStudio/DATASETS/main/STOCK_SYMBOLS/YAHOO/sp500.csv"
