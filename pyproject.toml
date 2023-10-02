@@ -32,7 +32,8 @@ dependencies = [
     "scipy",
     "pytest",
     "pytest-cov",
-    "python-dotenv"
+    "python-dotenv",
+    "psutil"
 ]
 
 [project.scripts]

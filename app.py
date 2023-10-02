@@ -3,7 +3,7 @@ import psutil
 from hobbytrader import database
 from hobbytrader.symbols import grab_tsx_stocks_from_github_mfs_dataset as tsx_symbols
 from hobbytrader.trades import Trades
-from hobbytrader.universe2 import TradeUniverse
+from hobbytrader.universe import TradeUniverse
 from datetime import datetime
 
 def print_mem(msg):
