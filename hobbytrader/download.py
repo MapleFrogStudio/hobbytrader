@@ -1,10 +1,9 @@
 import datetime
 import pandas as pd
 
-
-from .symbols import grab_SP500_from_github_mfs_dataset as sp500_tickers
-from .symbols import grab_tsx_stocks_from_github_mfs_dataset as tsx_tickers
-from .symbols import grab_nasdaq_sector_from_github_mfs_dataset as nasdaq_sector
+from .github import grab_SP500_from_github_mfs_dataset as sp500_tickers
+from .github import grab_tsx_stocks_from_github_mfs_dataset as tsx_tickers
+from .github import grab_nasdaq_sector_from_github_mfs_dataset as nasdaq_sector
 from .yahoo import minute_prices as minute_prices
 
 def sp500():
