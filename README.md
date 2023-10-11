@@ -4,11 +4,16 @@
 >No user interface, all demos run from the command line with results printed in the terminal
 ## Hobby trader is a python project for manipulating historical price data for stock trading  
   
-This project is divided into three (3+) repositories:
+This project is divided into three (3 or more) repositories:
 - [hobbytrader](https://github.com/MapleFrogStudio/hobbytrader) : repository with programs to create automated strategies and backtests  
 - [downloader](https://github.com/MapleFrogStudio/downloader) : repository with github actions to download daily minute price data  
-- [DATASETS](https://github.com/MapleFrogStudio/DATASETS) : repository to store accumulated data for later use in backtesting (*SP500 & TSX*)  
+- [DATASETS](https://github.com/MapleFrogStudio/DATASETS) : repository to store accumulated data for later use in backtesting (*some SP500 & some TSX*)    
 - Other repositories [DATA-9999-99] containing monthly minute price data for NASDAQ sectors (example June 2023 -> DATA-2023-06)  
+  
+
+# High level view of package components
+![High level module schema](https://github.com/MapleFrogStudio/hobbytrader/blob/a8647ef8534e22dc44023dcbb6c014d2bb086956/hobbytrader/assets/packages.png)
+
 
 # Downloader repo
 This [project](https://github.com/MapleFrogStudio/downloader) uses github actions to download daily minute price data and archive the results as a CSV or PARQUET file. The list of symbols is managed manually and saved to a github repo. See the scrappers module to download recent available symbols from specialised web sites. The generated files cover the following groups of symbols:

@@ -1,6 +1,8 @@
 '''Test script for TradeUniverse. Assumes example/build_db was run and roduced a database called DB/minute.sqlite'''
 import pytest
+from hobbytrader import github
 from hobbytrader.universe import TradeUniverse
+import datetime
 
 @pytest.fixture()
 def not_loaded_universe():
@@ -41,7 +43,7 @@ def test_TradeUniverse_constructor_with_list():
     assert u is not None
     assert u.db_path == db
     assert u.datas is None
-    assert u.load_status == TradeUniverse.TU_DATA_LOADED_FAIL
+    assert u.load_status == False
     assert len(u.symbols_requested) == 2
 
 
@@ -72,14 +74,8 @@ def test_load_full_universe(loaded_universe):
     assert u is not None
     assert u.symbols_requested == symbols
     assert u.loaded_symbols.sort() == symbols.sort()
-    assert u.load_status == TradeUniverse.TU_DATA_LOADED_SUCCESS
+    assert u.load_status == True
     assert u.datas is not None
-
-def test_partial_load_full_universe():
-    db = 'DB/minute.sqlite'
-    symbols = ['AAPL','TSLA', 'NoGood']
-    u = TradeUniverse(symbols, load_data=True, db_path=db)
-    assert u.load_status == TradeUniverse.TU_DATA_LOADED_PARTIAL    
 
 # SERIES OF TESTS to check TradeUniverse methods
 @pytest.mark.parametrize("symbols_to_check, expected", [
@@ -110,7 +106,7 @@ def test_load_symbols_data_from_db(not_loaded_universe):
 def test_fail_load_symbols_data_from_db(empty_universe):
     symbols, u = empty_universe
     u.load_universe_data()
-    assert u.load_status == TradeUniverse.TU_DATA_LOADED_FAIL
+    assert u.load_status == False
     assert u.datas == None
     assert u.loaded_symbols is None
     assert u.dt_min is None
@@ -292,3 +288,32 @@ def test_fail__str__loaded(empty_universe):
     json_str = u.__str__()
     print(json_str)    
     assert json_str is None
+
+def test_load_universe_data_for_range():
+    #tsx = github.grab_tsx_stocks_from_github_mfs_dataset()
+    #symbols = tsx.Yahoo.to_list()
+    symbols = ['TSLA','AAPL','GIB-A.TO']
+    u = TradeUniverse(symbols=symbols, load_data=False)
+    assert u is not None
+    assert u.datas is None
+    assert u.dates is None
+    
+    dt_start = '2023-02-24 09:30:00'
+    dt_end = '2023-02-24 09:32:00'
+    dt_start_obj = datetime.datetime.strptime(dt_start, "%Y-%m-%d %H:%M:%S")
+    dt_end_obj = datetime.datetime.strptime(dt_end, "%Y-%m-%d %H:%M:%S")
+    minutes_between_dates = dt_end_obj - dt_start_obj
+    expected_rows_per_stock = divmod(minutes_between_dates.total_seconds(), 60)[0]+1
+    
+    u.load_universe_data_for_range(dt_start, dt_end)
+    assert len(u.datas) == len(symbols) * expected_rows_per_stock
+    
+    #print('************************************************')
+    #print(u.datas)
+    #print(u.dates)
+    #print('************************************************')
+    print(f'\nExpected rows per stock: {expected_rows_per_stock}')
+    print(f'Number of price rows loaded: {len(u.datas)}')
+    print(f'Symbols requested {len(u.symbols_requested)}: {u.symbols_requested}')
+    print(f"Dt start: {dt_start}, Dt end  : {dt_end}")
+    print(f"Min date: {u.dt_min}, Max date: {u.dt_max}")

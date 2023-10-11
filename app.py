@@ -1,7 +1,7 @@
 import json
 import psutil
 from hobbytrader import database
-from hobbytrader.symbols import grab_tsx_stocks_from_github_mfs_dataset as tsx_symbols
+#from hobbytrader.symbols import grab_tsx_stocks_from_github_mfs_dataset as tsx_symbols
 from hobbytrader import symbols
 from hobbytrader.universe import TradeUniverse
 from hobbytrader import scrappers
@@ -19,6 +19,26 @@ def print_mem(msg):
     print(f"Used Memory: {used_memory / (1024 ** 3):.2f} GB")
     print(f"Free Memory: {free_memory / (1024 ** 3):.2f} GB")  
     print(f'--------------------------------------------------------------------')
+
+def scrapers():
+    advfn = scrappers.ADVFN()
+    df = advfn.scrape_data()
+    print(df)
+    advfn.to_csv()
+    input('Press ENTER To continue')
+
+    fmpad = scrappers.FMPAD()
+    df = fmpad.scrape_data()
+    print(df)
+    fmpad.to_csv()
+    input('Press ENTER To continue')
+
+    wiki = scrappers.wikipedia_SP500()
+    df = wiki.scrape_data()
+    print(df)
+    wiki.to_csv()
+    print(wiki.history())    
+    input('Press ENTER To continue')
 
 def main():
     db_path = 'DB/minute.sqlite'
@@ -44,28 +64,22 @@ def main():
             break
         print_mem(f'Index loop {u.date_index}...')
 
-def scrapers():
-    scrape = scrappers.ADVFN()
-    df = scrape.scrape_data()
-    print(df)
-    scrape.to_csv()
-    input('Press ENTER To continue')
+def do_trades():
+    symbols = ['TSLA', 'AAPL', 'GIB-A.TO']   
+    u = TradeUniverse(symbols, load_data=False)
+    print(f'Loaded symbols: {u.loaded_symbols}')
+    print(f'Valid symbols: {u._valid_symbols}')
+    print(f'DB first date: {u.db_first_date}, DB Last date: {u.db_last_date}')
+    print(f'Start time: {datetime.now()}')
+    print(f'DB Total rows available: {u.total_prices_loaded}')
+    print(f'Finish time: {datetime.now()}')
 
-    scrape = scrappers.FMPAD()
-    df = scrape.scrape_data()
-    print(df)
-    scrape.to_csv()
-    input('Press ENTER To continue')
-
-    scrape = scrappers.wikipedia_SP500()
-    df = scrape.scrape_data()
-    print(df)
-    scrape.to_csv()
-    print(scrape.history())    
-    input('Press ENTER To continue')
+    print(f'Start time #2: {datetime.now()}')
+    print(f'DB Total rows available: {u.total_prices_loaded}')
+    print(f'Finish time #2: {datetime.now()}')
 
 if __name__ == '__main__':
     print_mem('Start of program')
-    
-    scrapers()
+    #scrapers()
+    do_trades()
     

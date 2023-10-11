@@ -2,15 +2,13 @@ import os
 import json
 import pandas as pd
 import numpy as np
+from datetime import datetime, time
+from dateutil.parser import parse
 
 from hobbytrader import database
 
 class TradeUniverse():
-    TU_DATA_LOADED_FAIL = 0
-    TU_DATA_LOADED_SUCCESS = 1
-    TU_DATA_LOADED_PARTIAL = 2
-
-    def __init__(self, symbols, load_data=True, db_path='DB/minute.sqlite', first_day=None):
+    def __init__(self, symbols, load_data=True, db_path='DB/minute.sqlite'):
         self.symbols_requested = []
         self._valid_symbols = None
         
@@ -20,6 +18,7 @@ class TradeUniverse():
         self.db_path = db_path
         self.db_first_date = database.min_date_in_db(self.db_path)
         self.db_last_date = database.max_date_in_db(self.db_path)
+        self.db_total_rows = None # First call will fetch the count(*)
 
         if not isinstance(symbols, list):
             self.symbols_requested.append(symbols)
@@ -37,7 +36,6 @@ class TradeUniverse():
 
         if load_data and self.found_in_db > 0:
             self.load_universe_data()
-            self.update_universe_meta_data()
 
 
     def __json__(self):
@@ -66,14 +64,11 @@ class TradeUniverse():
     @property
     def load_status(self) -> bool:
         if self.datas is None:
-            return TradeUniverse.TU_DATA_LOADED_FAIL    
+            return False    
        
         if self.datas is not None:
             self.symbols_requested.sort()
-            if self.loaded_symbols == self.symbols_requested:
-                return TradeUniverse.TU_DATA_LOADED_SUCCESS
-            else:
-                return TradeUniverse.TU_DATA_LOADED_PARTIAL
+            return True
 
     @property
     def found_in_db(self) -> int:
@@ -97,6 +92,12 @@ class TradeUniverse():
         symbols = self.datas.Symbol.unique().tolist()
         symbols.sort()
         return symbols
+
+    @property
+    def total_prices_loaded(self) -> int:
+        if self.db_total_rows is None:
+            self.db_total_rows = database.db_total_rows(self.db_path)
+        return self.db_total_rows
 
     @property
     def dt_min(self):
@@ -138,6 +139,35 @@ class TradeUniverse():
         
         self.datas = database.load_OHLCV_from_db_for_symbols(self.db_path, self._valid_symbols)
         self.datas = database.optimize_column_types(self.datas)        
+        self.update_universe_meta_data()
+
+    def load_universe_data_for_range(self, first_date, last_date):
+        # Sanity checks before launching an expensive function
+        # Will load for self.symbols
+        try:
+            start_dt = parse(first_date)
+            end_dt = parse(last_date)
+        except ValueError as e:
+            raise ValueError(f'Invalid date passed as argument. {e}')
+
+
+        # TODO: Add valid date ranges tha must be between db_min and db_MAX
+
+        # Make sure we grab the entire day if time is not specified
+        if start_dt.time() == time(0, 0):
+            start_dt = start_dt.replace(hour=0, minute=0, second=0)
+        if end_dt.time() == time(0, 0, 0):
+            end_dt = end_dt.replace(hour=23, minute=59, second=59)
+
+        start_dt = start_dt.strftime('%Y-%m-%d %H:%M:%S')
+        end_dt = end_dt.strftime('%Y-%m-%d %H:%M:%S')
+
+        if self.found_in_db > 0:
+            self.datas = database.load_OHLCV_from_db_for_dates(self.db_path, symbols=self.symbols_requested, dt_start=start_dt, dt_end=end_dt ) 
+            self.datas = database.optimize_column_types(self.datas) 
+            self.update_universe_meta_data()
+
+
 
     def reset_universe_meta_data(self) -> None:
         self.datas = None

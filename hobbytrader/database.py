@@ -120,7 +120,7 @@ def valid_date_format(dt):
         return False  
 
 #TODO: Add load_OHCLV_from_db_for_dates.....
-def load_OHLCV_from_db_for_dates(db, dt_start=None, dt_end=None):
+def load_OHLCV_from_db_for_dates(db, symbols, dt_start=None, dt_end=None):
     ''' Return OHCLV price data for a range of dates '''
 
     if not valid_date_format(dt_start):
@@ -132,8 +132,18 @@ def load_OHLCV_from_db_for_dates(db, dt_start=None, dt_end=None):
     #dt_end = '2023-09-11 15:52:00'
 
     db_conn, _ = open_sqlite_db(db)  
-    sql1 = f"SELECT * FROM prices WHERE Datetime >= :dt_start AND Datetime <= :dt_end;"
-    df1 = pd.read_sql_query(sql1, db_conn, params={"dt_start":dt_start, "dt_end":dt_end})
+
+    # if len(symbols) == 0:
+    #     params = {
+    #         'start_date': dt_start,
+    #         'end_date': dt_end
+    #     }
+    #     sql1 = f"SELECT * FROM prices WHERE Datetime >= :dt_start AND Datetime <= :dt_end;"
+    #     df1 = pd.read_sql_query(sql1, db_conn, params=params)
+    # else:
+    sql1 = "SELECT * FROM prices WHERE Symbol IN ({}) AND Datetime >= ? AND Datetime <= ?".format(', '.join(['?'] * len(symbols)))
+    params = symbols + [dt_start, dt_end]
+    df1 = pd.read_sql_query(sql1, db_conn, params=params)
 
     df1 = df1[['Datetime','Symbol','Open','High','Low','Close','Volume']]
     return df1
@@ -185,6 +195,13 @@ def min_date_in_db(db_file):
     min_date = [row[0] for row in cursor.fetchall()]
     return pd.to_datetime(min_date[0])
 
+def db_total_rows(db_file):
+    conn, cursor = open_sqlite_db(db_file)
+    cursor.execute("SELECT COUNT(*) FROM prices")
+    row_count = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return row_count
 
 def generate_fake_data():
     ID =     ['20230428093000AAPL','20230428093100AAPL','20230428093200AAPL','20230428093300AAPL','20230428093400AAPL','20230428093500AAPL','20230428093600AAPL','20230428093700AAPL','20230428093000TSLA','20230428093100TSLA','20230428093200TSLA','20230428093300TSLA','20230428093400TSLA','20230428093500TSLA','20230428093600TSLA']
