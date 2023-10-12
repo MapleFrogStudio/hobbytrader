@@ -4,45 +4,35 @@ from hobbytrader import github
 from hobbytrader.universe import TradeUniverse
 import datetime
 
-@pytest.fixture()
-def not_loaded_universe():
-    symbols = ['TSLA','AAPL']
-    #symbols = ['AAPL', 'TSLA']
-    u = TradeUniverse(symbols, load_data=False)    
-    return symbols, u
-
-@pytest.fixture()
-def loaded_universe():
-    symbols = ['TSLA','AAPL']
-    u = TradeUniverse(symbols, load_data=True)    
-    return symbols, u 
-
-@pytest.fixture()
-def empty_universe():
-    symbols = ['NoGood1','NoGood2']
-    u = TradeUniverse(symbols, load_data=False)    
-    return symbols, u
-
-
-# SERIES OF TESTS TO CHECK contrutor without loading all the data
-def test_TradeUniverse_constructor_no_parameters():
-    with pytest.raises(TypeError):
-        u = TradeUniverse()
-
-def test_TradeUniverse_constructor_with_list():
-    db = 'DB/minute.sqlite'
+def test_TradeUniverse_constructor_with_good_symbols():
     symbols = ['AAPL','TSLA']
-    u = TradeUniverse(symbols, load_data=False, db_path=db)
+    u = TradeUniverse(symbols)
     assert u is not None
-    assert u.db_path == db
     assert u.datas is None
     assert u.load_status == False
     assert len(u.symbols_requested) == 2
 
+def test_TradeUniverse_constructor_with_some_symbols():
+    symbols = ['AAPL','TSLA', 'NoGood']
+    u = TradeUniverse(symbols)
+    assert u is not None
+    assert u.datas is None
+    assert u.load_status == False
+    assert len(u.symbols_requested) == 3
+
+# SERIES OF TESTS TO CHECK construtor errors
+def test_TradeUniverse_constructor_with_all_bad_symbols():
+    symbols = ['NoGood1','NoGood2']
+    with pytest.raises(ValueError):
+        u = TradeUniverse(symbols)
+
+def test_TradeUniverse_constructor_no_parameters():
+    with pytest.raises(TypeError):
+        u = TradeUniverse()
 
 def test_TradeUniverse_constructor_with_string():
-    u = TradeUniverse('TSLA', load_data=False)
-    assert u is not None
+    with pytest.raises(ValueError):
+        u = TradeUniverse('TSLA')
 
 @pytest.mark.parametrize("non_strings_list",[
     (['TSLA',1]), (1,'TSLA'), ('TSLA',True)
@@ -51,25 +41,32 @@ def test_TradeUniverse_constructor_non_string_in_list(non_strings_list):
     with pytest.raises(ValueError):
         u = TradeUniverse(non_strings_list, load_data=False)
 
-def test_TradeUniverse_constructor_load_data_non_boolean():
-    with pytest.raises(ValueError):
-        u = TradeUniverse(['TSLA','AAPL'], load_data=10)
-
 def test_TradeUniverse_constructor_db_path_non_string():
     with pytest.raises(ValueError):
         u = TradeUniverse(['TSLA','AAPL'], db_path=10)
 
+def test_TradeUniverse_constructor_db_path_not_found():
+    with pytest.raises(ValueError):
+        u = TradeUniverse(['TSLA','AAPL'], db_path='nodbfile.sqlite')
+
 
 # TEST UNIVERSE with data loading and all stats
-def test_load_universe_for_symbols(loaded_universe):
-    symbols, u = loaded_universe
+def test_load_universe_all_dates():
+    symbols = ['AAPL','TSLA']
+    u = TradeUniverse(symbols)
+    u.load_universe_data_all_dates()
 
     assert u is not None
     assert u.symbols_requested == symbols
     assert u.loaded_symbols.sort() == symbols.sort()
     assert u.load_status == True
     assert u.datas is not None
+    assert u.dates is not None
+    assert len(u.dates) > 0
 
+    print(f'\nsymbols_Requested: {len(u.symbols_requested)}, Dates loaded: {len(u.dates)}, Symbols_loaded: {len(u.loaded_symbols)}')
+
+# RENDU ICI POUR CORRGER Load for date ainsi que les tests assoicés
 
 def test_load_universe_for_range():
     #tsx = github.grab_tsx_stocks_from_github_mfs_dataset()

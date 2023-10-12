@@ -8,34 +8,66 @@ from dateutil.parser import parse
 from hobbytrader import database
 
 class TradeUniverse():
-    def __init__(self, symbols, load_data=True, db_path='DB/minute.sqlite'):
+    def __init__(self, symbols:list, db_path='DB/minute.sqlite'):
         self.symbols_requested = []
-        self._valid_symbols = None
+        self.datas = None
+        self.dates = None
+        self.dt_current = None
         
         # Sanity checks on constructor parameters
+        if not isinstance(symbols, list):
+            raise ValueError(f'{self.__class__}: Constructor only accepts list of strings as symbols')                    
+        if not all(map(lambda s: isinstance(s, str), symbols)):
+            raise ValueError(f'{self.__class__}: Constructor only accepts list of strings as symbols')        
+        
         if not isinstance(db_path, str):
             raise ValueError(f'{self.__class__}: Constructor db_path must be a string')
+        if not os.path.isfile(db_path):
+            raise ValueError(f'{self.__class__}: DB file "{db_path}" does not exist.')
+
         self.db_path = db_path
         self.db_first_date = database.min_date_in_db(self.db_path)
         self.db_last_date = database.max_date_in_db(self.db_path)
         self.db_total_rows = None # First call will fetch the count(*)
+        
+        self.symbols_requested = symbols
+        if self.found_in_db == 0:
+            raise ValueError(f'{self.__class__}: No symbols found in DB, will not be able to load data...')        
 
-        if not isinstance(symbols, list):
-            self.symbols_requested.append(symbols)
-        if not all(map(lambda s: isinstance(s, str), symbols)):
-            raise ValueError(f'{self.__class__}: Constructor only accepts list of strings')
+    def load_universe_data_all_dates(self):
+        '''Load Universe Data with requested_symbols for all available dates'''
+        self.datas = database.load_OHLCV_from_db_for_symbols(self.db_path, self._valid_symbols)
+        self.datas = database.optimize_column_types(self.datas)        
+        self.update_universe_meta_data()
 
-        if not isinstance(load_data, bool):
-            raise ValueError(f'{self.__class__}: Constructor load_data flag must be boolean')
+    def load_universe_data_for_dates(self, first_date, last_date):
+        '''Load Universe Data with requested_symbols for date range (first and last date)'''
+        # Sanity checks before launching an expensive database function
+        try:
+            start_dt = parse(first_date)
+            end_dt = parse(last_date)
+        except ValueError as e:
+            raise ValueError(f'Invalid date passed as argument. {e}')
 
-        self.reset_universe_meta_data()
+        if start_dt > end_dt:
+            raise ValueError(f'Invalid dates passed as argument (last_date must be after first_date). {e}')
 
-        # If sanity checks passed, then symbols is a list of strings
-        if len(self.symbols_requested) == 0:
-            self.symbols_requested += symbols
+# RENDU ICI POUR CORRGER Load for date ainsi que les tests assoicés
 
-        if load_data and self.found_in_db > 0:
-            self.load_universe_data()
+        # Make sure we grab the entire day if time is not specified
+        if start_dt.time() == time(0, 0):
+            start_dt = start_dt.replace(hour=0, minute=0, second=0)
+        if end_dt.time() == time(0, 0, 0):
+            end_dt = end_dt.replace(hour=23, minute=59, second=59)
+
+        start_dt = start_dt.strftime('%Y-%m-%d %H:%M:%S')
+        end_dt = end_dt.strftime('%Y-%m-%d %H:%M:%S')
+
+        if self.found_in_db > 0:
+            self.datas = database.load_OHLCV_from_db_for_dates(self.db_path, symbols=self.symbols_requested, dt_start=start_dt, dt_end=end_dt ) 
+            self.datas = database.optimize_column_types(self.datas) 
+            self.update_universe_meta_data()
+    
 
 
     def __json__(self):
@@ -129,51 +161,7 @@ class TradeUniverse():
             value = len(self.dates) - 1
         self.dt_current = self.dates[value]
 
-    def load_universe_data(self):
-        '''Load Universe Data and update all meta_data
-        '''
-        if self._valid_symbols is None:
-            self.datas = None
-            self.reset_universe_meta_data()
-            return
-        
-        self.datas = database.load_OHLCV_from_db_for_symbols(self.db_path, self._valid_symbols)
-        self.datas = database.optimize_column_types(self.datas)        
-        self.update_universe_meta_data()
 
-    def load_universe_data_for_range(self, first_date, last_date):
-        # Sanity checks before launching an expensive function
-        # Will load for self.symbols
-        try:
-            start_dt = parse(first_date)
-            end_dt = parse(last_date)
-        except ValueError as e:
-            raise ValueError(f'Invalid date passed as argument. {e}')
-
-
-        # TODO: Add valid date ranges tha must be between db_min and db_MAX
-
-        # Make sure we grab the entire day if time is not specified
-        if start_dt.time() == time(0, 0):
-            start_dt = start_dt.replace(hour=0, minute=0, second=0)
-        if end_dt.time() == time(0, 0, 0):
-            end_dt = end_dt.replace(hour=23, minute=59, second=59)
-
-        start_dt = start_dt.strftime('%Y-%m-%d %H:%M:%S')
-        end_dt = end_dt.strftime('%Y-%m-%d %H:%M:%S')
-
-        if self.found_in_db > 0:
-            self.datas = database.load_OHLCV_from_db_for_dates(self.db_path, symbols=self.symbols_requested, dt_start=start_dt, dt_end=end_dt ) 
-            self.datas = database.optimize_column_types(self.datas) 
-            self.update_universe_meta_data()
-
-
-
-    def reset_universe_meta_data(self) -> None:
-        self.datas = None
-        self.dates = None
-        self.dt_current = None
-    
     def update_universe_meta_data(self):
         self.dates = np.unique(self.datas.Datetime.values)
         self.dt_current = self.dates[0]
