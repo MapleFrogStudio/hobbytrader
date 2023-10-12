@@ -61,7 +61,7 @@ def test_TradeUniverse_constructor_db_path_non_string():
 
 
 # TEST UNIVERSE with data loading and all stats
-def test_load_full_universe(loaded_universe):
+def test_load_universe_for_symbols(loaded_universe):
     symbols, u = loaded_universe
 
     assert u is not None
@@ -69,6 +69,82 @@ def test_load_full_universe(loaded_universe):
     assert u.loaded_symbols.sort() == symbols.sort()
     assert u.load_status == True
     assert u.datas is not None
+
+
+def test_load_universe_for_range():
+    #tsx = github.grab_tsx_stocks_from_github_mfs_dataset()
+    #symbols = tsx.Yahoo.to_list()
+    symbols = ['TSLA','AAPL','GIB-A.TO']
+    u = TradeUniverse(symbols=symbols, load_data=False)
+    assert u is not None
+    assert u.datas is None
+    assert u.dates is None
+    
+    dt_start = '2023-02-24 09:30:00'
+    dt_end = '2023-02-24 09:32:00'
+    dt_start_obj = datetime.datetime.strptime(dt_start, "%Y-%m-%d %H:%M:%S")
+    dt_end_obj = datetime.datetime.strptime(dt_end, "%Y-%m-%d %H:%M:%S")
+    minutes_between_dates = dt_end_obj - dt_start_obj
+    expected_rows_per_stock = divmod(minutes_between_dates.total_seconds(), 60)[0]+1
+    
+    u.load_universe_data_for_range(dt_start, dt_end)
+    assert len(u.datas) == len(symbols) * expected_rows_per_stock
+    
+    #print('************************************************')
+    #print(u.datas)
+    #print(u.dates)
+    #print('************************************************')
+    print(f'\nExpected rows per stock: {expected_rows_per_stock}')
+    print(f'Number of price rows loaded: {len(u.datas)}')
+    print(f'Symbols requested {len(u.symbols_requested)}: {u.symbols_requested}')
+    print(f"Dt start: {dt_start}, Dt end  : {dt_end}")
+    print(f"Min date: {u.dt_min}, Max date: {u.dt_max}")
+
+def test_json_loaded_universe(loaded_universe):
+    symbols,u = loaded_universe
+    json_dict = u.__json__()
+    print(f'\nUniverse Json:{json_dict}')
+    assert json_dict is not None
+
+def test_json_empty_universe(empty_universe):
+    symbols,u = empty_universe
+    json_dict = u.__json__()
+    print(f'\nUniverse Json:{json_dict}')
+    assert json_dict is None
+
+def test__str__loaded_universe(loaded_universe):
+    symbols,u = loaded_universe
+    json_str = u.__str__()
+    print(json_str)
+
+def test__str__empty_universe(empty_universe):
+    symbols,u = empty_universe
+    json_str = u.__str__()
+    print(json_str)    
+    assert json_str is None
+
+
+def test_to_json_string_loaded_universe(loaded_universe):
+    symbols,u = loaded_universe
+    json_str = u.to_json()
+    print(f'Universe symbols: {u.loaded_symbols}')
+    print(f'Json string (to_json): {json_str}')
+    assert 'SymbolsNumber' in json_str
+
+def test_to_json_string_empty_universe(empty_universe):
+    symbols,u = empty_universe
+    json_str = u.to_json()
+    print(f'Universe symbols: {u.loaded_symbols}')
+    print(f'Json string (to_json): {json_str}')
+    assert json_str is None
+
+def test_load_status_loaded_universe(loaded_universe):
+    _, u = loaded_universe
+    assert u.load_status
+
+def test_load_status_empty_universe(empty_universe):
+    _, u = empty_universe
+    assert not u.load_status
 
 # SERIES OF TESTS to check TradeUniverse methods
 @pytest.mark.parametrize("symbols_to_check, expected", [
@@ -79,15 +155,15 @@ def test_load_full_universe(loaded_universe):
     (['TSLA','NoGood'], 1),
     ([], 0)
 ])
-def test_symbols_exist_in_db(symbols_to_check, expected):
+def test_found_in_db(symbols_to_check, expected):
     u = TradeUniverse(symbols_to_check, load_data=False) # Only create the class do not load anything
     found_in_db = u.found_in_db
     print(f'Check_status: {found_in_db}')
     print(f'Valid symbols: {u._valid_symbols}')
     assert found_in_db == expected
     
-
-def test_load_symbols_data_from_db(not_loaded_universe):
+def test_loaded_symbols_from_not_loaded_universe(not_loaded_universe):
+    # We need a Trading Universe Object with requested_symbols initiated
     _, u = not_loaded_universe
     found_in_db = u.found_in_db
     assert u is not None
@@ -95,6 +171,13 @@ def test_load_symbols_data_from_db(not_loaded_universe):
     # We are ready to test our load function (we now assume our symbols are in DB)
     u.load_universe_data()
     assert u.datas is not None
+
+
+
+
+#ICICI
+
+
 
 def test_fail_load_symbols_data_from_db(empty_universe):
     symbols, u = empty_universe
@@ -239,69 +322,6 @@ def test_next_dt_on_last_index(loaded_universe):
     success = u.next_dt()
     assert not success
 
-def test_json_returned(loaded_universe):
-    symbols,u = loaded_universe
-    json_dict = u.__json__()
-    print(f'\nUniverse Json:{json_dict}')
-    assert json_dict is not None
-
-def test_json_empty_universe(empty_universe):
-    symbols,u = empty_universe
-    json_dict = u.__json__()
-    print(f'\nUniverse Json:{json_dict}')
-    assert json_dict is None
 
 
-def test_to_json_string_returned(loaded_universe):
-    symbols,u = loaded_universe
-    json_str = u.to_json()
-    print(f'Universe symbols: {u.loaded_symbols}')
-    print(f'Json string (to_json): {json_str}')
-    assert 'SymbolsNumber' in json_str
 
-def test_fail_to_json_string_returned(empty_universe):
-    symbols,u = empty_universe
-    json_str = u.to_json()
-    print(f'Universe symbols: {u.loaded_symbols}')
-    print(f'Json string (to_json): {json_str}')
-    assert json_str is None
-
-def test__str__loaded(loaded_universe):
-    symbols,u = loaded_universe
-    json_str = u.__str__()
-    print(json_str)
-
-def test_fail__str__loaded(empty_universe):
-    symbols,u = empty_universe
-    json_str = u.__str__()
-    print(json_str)    
-    assert json_str is None
-
-def test_load_universe_data_for_range():
-    #tsx = github.grab_tsx_stocks_from_github_mfs_dataset()
-    #symbols = tsx.Yahoo.to_list()
-    symbols = ['TSLA','AAPL','GIB-A.TO']
-    u = TradeUniverse(symbols=symbols, load_data=False)
-    assert u is not None
-    assert u.datas is None
-    assert u.dates is None
-    
-    dt_start = '2023-02-24 09:30:00'
-    dt_end = '2023-02-24 09:32:00'
-    dt_start_obj = datetime.datetime.strptime(dt_start, "%Y-%m-%d %H:%M:%S")
-    dt_end_obj = datetime.datetime.strptime(dt_end, "%Y-%m-%d %H:%M:%S")
-    minutes_between_dates = dt_end_obj - dt_start_obj
-    expected_rows_per_stock = divmod(minutes_between_dates.total_seconds(), 60)[0]+1
-    
-    u.load_universe_data_for_range(dt_start, dt_end)
-    assert len(u.datas) == len(symbols) * expected_rows_per_stock
-    
-    #print('************************************************')
-    #print(u.datas)
-    #print(u.dates)
-    #print('************************************************')
-    print(f'\nExpected rows per stock: {expected_rows_per_stock}')
-    print(f'Number of price rows loaded: {len(u.datas)}')
-    print(f'Symbols requested {len(u.symbols_requested)}: {u.symbols_requested}')
-    print(f"Dt start: {dt_start}, Dt end  : {dt_end}")
-    print(f"Min date: {u.dt_min}, Max date: {u.dt_max}")
