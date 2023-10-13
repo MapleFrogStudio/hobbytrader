@@ -40,7 +40,7 @@ class TradeUniverse():
         self.datas = database.optimize_column_types(self.datas)        
         self.update_universe_meta_data()
 
-    def load_universe_data_for_dates(self, first_date, last_date):
+    def load_universe_data_for_range(self, first_date, last_date):
         '''Load Universe Data with requested_symbols for date range (first and last date)'''
         # Sanity checks before launching an expensive database function
         try:
@@ -52,24 +52,20 @@ class TradeUniverse():
         if start_dt > end_dt:
             raise ValueError(f'Invalid dates passed as argument (last_date must be after first_date). {e}')
 
-# RENDU ICI POUR CORRGER Load for date ainsi que les tests assoicés
-
         # Make sure we grab the entire day if time is not specified
         if start_dt.time() == time(0, 0):
             start_dt = start_dt.replace(hour=0, minute=0, second=0)
         if end_dt.time() == time(0, 0, 0):
             end_dt = end_dt.replace(hour=23, minute=59, second=59)
 
-        start_dt = start_dt.strftime('%Y-%m-%d %H:%M:%S')
-        end_dt = end_dt.strftime('%Y-%m-%d %H:%M:%S')
+        start_dt_str = start_dt.strftime('%Y-%m-%d %H:%M:%S')
+        end_dt_str = end_dt.strftime('%Y-%m-%d %H:%M:%S')
 
         if self.found_in_db > 0:
-            self.datas = database.load_OHLCV_from_db_for_dates(self.db_path, symbols=self.symbols_requested, dt_start=start_dt, dt_end=end_dt ) 
+            self.datas = database.load_OHLCV_from_db_for_dates(self.db_path, symbols=self.symbols_requested, dt_start=start_dt_str, dt_end=end_dt_str ) 
             self.datas = database.optimize_column_types(self.datas) 
             self.update_universe_meta_data()
     
-
-
     def __json__(self):
         '''Return a python dictionary of relevant class attributes'''
         if self.datas is None:
@@ -124,12 +120,6 @@ class TradeUniverse():
         symbols = self.datas.Symbol.unique().tolist()
         symbols.sort()
         return symbols
-
-    @property
-    def total_prices_loaded(self) -> int:
-        if self.db_total_rows is None:
-            self.db_total_rows = database.db_total_rows(self.db_path)
-        return self.db_total_rows
 
     @property
     def dt_min(self):
