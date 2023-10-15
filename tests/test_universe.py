@@ -167,6 +167,8 @@ def test_property_load_status_universe_not_loaded():
     (['TSLA','NoGood'], 1)
 ])
 def test_property_found_in_db_and_loaded_symbols(symbols_to_check, expected):
+    # found_in_db()
+    # loaded_symbols()
     symbols = symbols_to_check
     u = TradeUniverse(symbols=symbols)
     u.load_universe_data_all_dates()    
@@ -175,4 +177,3 @@ def test_property_found_in_db_and_loaded_symbols(symbols_to_check, expected):
     assert len(u.loaded_symbols) == expected
     print(f'\nNumber of symbols in DB: {found_in_db}')
     print(f'Loaded symbols: {u.loaded_symbols}')
-

@@ -2,7 +2,6 @@ import json
 import psutil
 from hobbytrader import database
 #from hobbytrader.symbols import grab_tsx_stocks_from_github_mfs_dataset as tsx_symbols
-from hobbytrader import symbols
 from hobbytrader.universe import TradeUniverse
 from hobbytrader import scrappers
 from datetime import datetime
@@ -66,17 +65,11 @@ def main():
 
 def do_trades():
     symbols = ['TSLA', 'AAPL', 'GIB-A.TO']   
-    u = TradeUniverse(symbols, load_data=False)
+    u = TradeUniverse(symbols)
+    u.load_universe_data_all_dates()
     print(f'Loaded symbols: {u.loaded_symbols}')
-    print(f'Valid symbols: {u._valid_symbols}')
     print(f'DB first date: {u.db_first_date}, DB Last date: {u.db_last_date}')
-    print(f'Start time: {datetime.now()}')
-    print(f'DB Total rows available: {u.total_prices_loaded}')
-    print(f'Finish time: {datetime.now()}')
-
-    print(f'Start time #2: {datetime.now()}')
-    print(f'DB Total rows available: {u.total_prices_loaded}')
-    print(f'Finish time #2: {datetime.now()}')
+    print(u.datas)
 
 if __name__ == '__main__':
     print_mem('Start of program')
