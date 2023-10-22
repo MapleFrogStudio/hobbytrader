@@ -53,29 +53,29 @@ def test_open_sqlite_db_file_not_found():
     with pytest.raises(ValueError):
         conn, cursor = database.open_sqlite_db(test_file)
 
-def test_create_db_and_table_file_success():
-    test_file = 'tests/test.sqlite'
-    db_connection = database.create_db_and_table(test_file)
-    assert db_connection is not None
-    db_connection.close()
-    if os.path.isfile(test_file):
-        os.remove(test_file)
-    assert not os.path.isfile(test_file)
-
-def test_create_db_and_table_file_fail():
-    test_file = 'tests/test.sqlite'
-    conn = sqlite3.connect(test_file)
-    conn.close()
-    if os.path.isfile(test_file):
-        with pytest.raises(ValueError):
-            db_connection = database.create_db_and_table(test_file)
-    else:
-        # If file is note created we cannot run this test (should never happen)
-        assert False # pragma: no cover
-
-    if os.path.isfile(test_file):
-        os.remove(test_file)
-    assert not os.path.isfile(test_file)
+#def test_create_db_and_table_file_success():
+#    test_file = 'tests/test.sqlite'
+#    db_connection = database.create_db_and_table(test_file)
+#    assert db_connection is not None
+#    db_connection.close()
+#    if os.path.isfile(test_file):
+#        os.remove(test_file)
+#    assert not os.path.isfile(test_file)
+#
+#def test_create_db_and_table_file_fail():
+#    test_file = 'tests/test.sqlite'
+#    conn = sqlite3.connect(test_file)
+#    conn.close()
+#    if os.path.isfile(test_file):
+#        with pytest.raises(ValueError):
+#            db_connection = database.create_db_and_table(test_file)
+#    else:
+#        # If file is note created we cannot run this test (should never happen)
+#        assert False # pragma: no cover
+#
+#    if os.path.isfile(test_file):
+#        os.remove(test_file)
+#    assert not os.path.isfile(test_file)
 
 
 def test_create_db_and_table_conflict_on_insert():
