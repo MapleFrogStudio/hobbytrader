@@ -1,7 +1,7 @@
 import json
 import psutil
 
-import plotly.graph_objects as go
+#import plotly.graph_objects as go
 import pandas as pd
 
 from hobbytrader import database
@@ -74,48 +74,49 @@ def do_trades():
     print(f'DB first date: {u.db_first_date}, DB Last date: {u.db_last_date}')
     print(u.datas)
 
-def plotly_demo():
-    #https://plotly.com/python/candlestick-charts/
-    df = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv')
-    fig = go.Figure(data=[go.Candlestick(x=df['Date'],
-                    open=df['AAPL.Open'],
-                    high=df['AAPL.High'],
-                    low=df['AAPL.Low'],
-                    close=df['AAPL.Close'])])
-    
-    fig.update_layout(xaxis_rangeslider_visible=False)
-    fig.show()
+#def plotly_demo():
+#    #https://plotly.com/python/candlestick-charts/
+#    df = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv')
+#    fig = go.Figure(data=[go.Candlestick(x=df['Date'],
+#                    open=df['AAPL.Open'],
+#                    high=df['AAPL.High'],
+#                    low=df['AAPL.Low'],
+#                    close=df['AAPL.Close'])])
+#    
+#    fig.update_layout(xaxis_rangeslider_visible=False)
+#    fig.show()
 
-def plot():
-    db_path = 'DB/minute.sqlite'
-    symbols = ['TSLA', 'AAPL', 'GIB-A.TO']
-    print_mem('Data loading please wait...')
-    u = TradeUniverse(symbols, db_path=db_path)
-    u.load_universe_data_all_dates()
-
-    df = u.datas[u.datas.Symbol == 'TSLA'][-100:]
-    fig = go.Figure(data=[go.Candlestick(x=df['Datetime'],
-                    open=df['Open'],
-                    high=df['High'],
-                    low=df['Low'],
-                    close=df['Close'])])
-
-    # fig.update_xaxes(
-    #     rangeslider_visible=False,
-    #     rangebreaks=[
-    #         # NOTE: Below values are bound (not single values), ie. hide x to y
-    #         dict(bounds=["sat", "mon"]),  # hide weekends, eg. hide sat to before mon
-    #         dict(bounds=[16, 9.5], pattern="hour"),  # hide hours outside of 9.30am-4pm
-    #         # dict(values=["2019-12-25", "2020-12-24"])  # hide holidays (Christmas and New Year's, etc)
-    #     ]
-    # )
-
-    #fig.update_layout(xaxis_rangeslider_visible=False)
-    fig.show()
+#def plot():
+#    db_path = 'DB/minute.sqlite'
+#    symbols = ['TSLA', 'AAPL', 'GIB-A.TO']
+#    print_mem('Data loading please wait...')
+#    u = TradeUniverse(symbols, db_path=db_path)
+#    u.load_universe_data_all_dates()
+#
+#    df = u.datas[u.datas.Symbol == 'TSLA'][-100:]
+#    fig = go.Figure(data=[go.Candlestick(x=df['Datetime'],
+#                    open=df['Open'],
+#                    high=df['High'],
+#                    low=df['Low'],
+#                    close=df['Close'])])
+#
+#    fig.update_xaxes(
+#        rangeslider_visible=False,
+#        rangebreaks=[
+#            # NOTE: Below values are bound (not single values), ie. hide x to y
+#            dict(bounds=["sat", "mon"]),  # hide weekends, eg. hide sat to before mon
+#            dict(bounds=[16, 9.5], pattern="hour"),  # hide hours outside of 9.30am-4pm
+#            # dict(values=["2019-12-25", "2020-12-24"])  # hide holidays (Christmas and New Year's, etc)
+#        ]
+#    )
+#
+#    #fig.update_layout(xaxis_rangeslider_visible=False)
+#    fig.show()
 
 
 if __name__ == '__main__':
     print_mem('Start of program')
     #scrapers()
     #do_trades()
-    plot()
+    #plot()
+    pass
