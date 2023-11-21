@@ -62,7 +62,11 @@ def create_db_and_table(db_file) -> sqlite3.Connection:
         cursor.execute(sql_create_prices_table)
         return conn
     else:
-        raise ValueError(f'Database already exists: {db_file}')
+        #raise ValueError(f'Database already exists: {db_file}')
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor() 
+        print(f'Database already exists, using file: {db_file}')
+        return conn
     
 #
 # Save to specific file formats

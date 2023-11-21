@@ -23,15 +23,15 @@ def main(github_repo, sub_folder, starts_with):
 if __name__ == '__main__':
     repo = 'DATASETS'
     subfolder = '/DAILY'
-    starts_with = 'TSX-2023-08'
+    starts_with = 'TSX-2023-10'
     main(repo, subfolder, starts_with)
 
     repo = 'DATASETS'
     subfolder = '/DAILY'
-    starts_with = 'SP500-2023-08'
+    starts_with = 'SP500-2023-10'
     main(repo, subfolder, starts_with)
 
-    repo = 'DATA-2023-08'
+    repo = 'DATA-2023-10'
     subfolder = '/'
     starts_with = 'NASDAQ-'
     main(repo, subfolder, starts_with)
