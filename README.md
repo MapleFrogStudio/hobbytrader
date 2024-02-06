@@ -13,7 +13,7 @@ This project is divided into three (3 or more) repositories:
   
 
 # High level view of package components
-![High level module schema](https://maplefrogstudio.com/images/github/hobbytrader01.png )
+![High level module schema](hobbytrader/assets/hobbytrader01.png)
 
 
 # Downloader repos 
