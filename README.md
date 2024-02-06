@@ -13,11 +13,12 @@ This project is divided into three (3 or more) repositories:
   
 
 # High level view of package components
-![High level module schema](https://maplefrogstudio.com/images/github/hobbytrader01.png)
+![High level module schema](https://maplefrogstudio.com/images/github/hobbytrader01.png )
 
 
 # Downloader repos 
 These projects [2023](https://github.com/MapleFrogStudio/downloader) / [2024](https://github.com/MapleFrogStudio/downloader2024) use github actions to download daily minute price data and archive the results as a CSV file. The list of symbols is managed manually and saved to different github repos. 
+
 
 # Limitations
 - Lists of tickers come from static symbols files that are updated on a random/yearly frequency  
