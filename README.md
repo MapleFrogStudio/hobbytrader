@@ -6,24 +6,21 @@
   
 This project is divided into three (3 or more) repositories:
 - [hobbytrader](https://github.com/MapleFrogStudio/hobbytrader) : repository with programs to create automated strategies and backtests  
-- [downloader](https://github.com/MapleFrogStudio/downloader) : repository with github actions to download daily minute price data  
+- [downloader](https://github.com/MapleFrogStudio/downloader) : repository with github actions to download daily minute price data (2023 symbols list)  
+- [downloader2024](https://github.com/MapleFrogStudio/downloader2024) : repository with github actions to download daily minute price data (2024 symbols list)  
 - [DATASETS](https://github.com/MapleFrogStudio/DATASETS) : repository to store accumulated data for later use in backtesting (*some SP500 & some TSX*)    
-- Other repositories [DATA-9999-99] containing monthly minute price data for NASDAQ sectors (example June 2023 -> DATA-2023-06)  
+- Other repositories [DATA-9999-99] containing monthly minute price data for other exchanges (example June 2023 -> DATA-2023-06) symbols stored in csv files may vary from one month to the next    
   
 
 # High level view of package components
 ![High level module schema](https://github.com/MapleFrogStudio/hobbytrader/blob/a8647ef8534e22dc44023dcbb6c014d2bb086956/hobbytrader/assets/packages.png)
 
 
-# Downloader repo
-This [project](https://github.com/MapleFrogStudio/downloader) uses github actions to download daily minute price data and archive the results as a CSV or PARQUET file. The list of symbols is managed manually and saved to a github repo. See the scrappers module to download recent available symbols from specialised web sites. The generated files cover the following groups of symbols:
-* TSX
-* S&P500
-* Each sector (CS - Consumer Defensive, FS - Financial Services, HC - Healthcare, IN - Industrials, TE - technology, CC - Consumer Cyclical, BM - Basic Materials, UT - Utilisities, CS - Communication Services, RE - Real Estate, EN - Energy)
+# Downloader repos 
+These projects [2023](https://github.com/MapleFrogStudio/downloader) / [2024](https://github.com/MapleFrogStudio/downloader2024) use github actions to download daily minute price data and archive the results as a CSV file. The list of symbols is managed manually and saved to different github repos. 
 
 # Limitations
-- Lists of tickers come from static symbols files that are updated on a random frequency  
-- Minute Price Data are stored in monthly groups of symbols to helps keep files under Github limitations (NASDAQ sectors for example)
+- Lists of tickers come from static symbols files that are updated on a random/yearly frequency  
 
 # Installation
 Open a command shell (powershell on windows) and run the command lines below
@@ -62,7 +59,6 @@ To download the latest trading day's minute prices for the TSX, launch tsx from 
 | scrappers.py |  Web Scrapper to download company symbols (tickers) from different web sites ([ADVFN](https://www.advfn.com/investing/stocks/canada/tsx?letter=A) & [FMPAP]((https://site.financialmodelingprep.com/developer/docs/)))|
 | database.py |  Functions to download price data from github repo and generate a SQLITE3 database (also supports CSV and Parquet save) |
 | yahoo.py | Function wrappers around the yfinance package to download daily or minute price data for lists of stock symbols |
-| symbols.py | Grab lists of symbols from MapleFrogStudio's DATASETS repo |
 | download.py | Functions to automate downloading price data from yahoo finance and storing them as CSV and Parquet files (*called from github actions*) |
 
 
