@@ -3,13 +3,16 @@
 import os
 import pandas as pd
 import sqlite3
+import warnings
+
 from dateutil.parser import parse
 
 from hobbytrader.github import Github
 
 def open_sqlite_db(db_file):
+    if db_file is None:
+        raise ValueError(f'Database not found: {db_file}')
     if not os.path.isfile(db_file):
-        #return None
         raise ValueError(f'Database not found: {db_file}')
     
     conn = None
@@ -123,35 +126,42 @@ def valid_date_format(dt):
     else:
         return False  
 
-#TODO: Add load_OHCLV_from_db_for_dates.....
-def load_OHLCV_from_db_for_dates(db, symbols, dt_start=None, dt_end=None):
+def load_OHLCV_from_db_for_dates(db, symbols=None, dt_start=None, dt_end=None, limit=1000):
     ''' Return OHCLV price data for a range of dates '''
 
-    if not valid_date_format(dt_start):
+    db_conn, _ = open_sqlite_db(db)  # Will raise a Value Error if bad db
+    
+    if symbols is None or not isinstance(symbols, list):
+        raise ValueError('Symbols is None or not a list')
+
+    if dt_start is None and dt_end is None and limit is None:
+        warnings.warn("Potentially large SQL Request that might impact performace or hang system", UserWarning)
+
+    if dt_start is None or not valid_date_format(dt_start):
         dt_start = min_date_in_db(db).strftime('%Y-%m-%d %H:%M:%S')
-    if not valid_date_format(dt_end):
+    if dt_end is None or not valid_date_format(dt_end):
         dt_end = max_date_in_db(db).strftime('%Y-%m-%d %H:%M:%S')
 
-    #dt_start = '2023-09-11 15:49:00'
-    #dt_end = '2023-09-11 15:52:00'
+    # Construct SQL query with optional LIMIT clause
+    sql_query = """
+        SELECT *
+        FROM prices
+        WHERE datetime BETWEEN ? AND ?
+        {}
+    """
 
-    db_conn, _ = open_sqlite_db(db)  
+    # Check if limit is specified
+    if limit is not None:
+        sql_query = sql_query.format("LIMIT ?")
+        params = (dt_start, dt_end, limit)
+    else:
+        sql_query = sql_query.format("")  # No LIMIT clause
+        params = (dt_start, dt_end)
 
-    # if len(symbols) == 0:
-    #     params = {
-    #         'start_date': dt_start,
-    #         'end_date': dt_end
-    #     }
-    #     sql1 = f"SELECT * FROM prices WHERE Datetime >= :dt_start AND Datetime <= :dt_end;"
-    #     df1 = pd.read_sql_query(sql1, db_conn, params=params)
-    # else:
-    sql1 = "SELECT * FROM prices WHERE Symbol IN ({}) AND Datetime >= ? AND Datetime <= ?".format(', '.join(['?'] * len(symbols)))
-    params = symbols + [dt_start, dt_end]
-    df1 = pd.read_sql_query(sql1, db_conn, params=params)
-
-    df1 = df1[['Datetime','Symbol','Open','High','Low','Close','Volume']]
-    return df1
-
+    # Execute the query using pd.read_sql_query and pass parameters using the params argument
+    df = pd.read_sql_query(sql_query, db_conn, params=params)
+    return df
+    
 
 def optimize_column_types(df):
     '''Cast each column to smaller types for memory optimization '''
