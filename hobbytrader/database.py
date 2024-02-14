@@ -36,7 +36,7 @@ def load_csv_prices_from_github(file_links):
     return merged_df
 
 def generate_ID(prices_df):    
-    print('Generating ID for each row [DATE + SYMBOL]')
+    # print('Generating ID for each row [DATE + SYMBOL]')
     prices_df['ID'] = prices_df.Datetime.str.replace(" ", "")
     prices_df['ID'] = prices_df.ID.str.replace("-", "")
     prices_df['ID'] = prices_df.ID.str.replace(":", "")

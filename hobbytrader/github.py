@@ -44,6 +44,11 @@ class Github:
         else:
             return []
 
+    # TODO : Add test to test_database.py
+    def load_csv(self, github_raw_link):
+        df = pd.read_csv(github_raw_link)
+        df = df[['Datetime','Symbol','Open','High','Low','Close','Adj Close','Volume']]
+        return df
 
 
 
