@@ -93,7 +93,8 @@ def main(github_repo, sub_folder, starts_with):
         print('No database cursor established... STOPING')
         return
 
-    for file in files_to_load[0:5]:
+    #for file in files_to_load[0:5]:
+    for file in files_to_load:
         data_df = github_object.load_csv(file)
         data_df = generate_ID(data_df)
 
