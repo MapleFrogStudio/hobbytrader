@@ -1,3 +1,12 @@
+""" 
+Make sure .env is setup with following variables:
+MYSQL_HOST=ipadress or webhost
+MYSQL_PORT=3306
+MYSQL_DB ='trading'
+MYSQL_USER=''
+MYSQL_PW='' 
+"""
+
 import os
 
 from pymysql import IntegrityError
