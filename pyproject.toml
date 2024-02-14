@@ -31,6 +31,7 @@ dependencies = [
     "seaborn",
     "panel",
     "scipy",
+    "mysql-connector-python",
     "pytest",
     "pytest-cov",
     "python-dotenv",
