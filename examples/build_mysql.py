@@ -121,22 +121,23 @@ def main(github_repo, sub_folder, starts_with):
     db._disconnect()
 
 if __name__ == '__main__':
-    # db = DBObject()
-    # data = db.get_all_users()
-    # for x in data:
-    #     print(x)
-
-    # if db.add_user('test@test.com','Testing is my life, but nothong works!', 'AU'):
-    #     print('New user inserted')
-    # else:
-    #     print('New insert FAILED...')
-
-    # data = db.get_all_users()
-    # for x in data:
-    #     print(x)
-
+    file_list = [
+        #'TSX-2023-09-22',
+        'TSX-2023-09-23',
+        'TSX-2023-09-24',
+        'TSX-2023-09-25',
+        'TSX-2023-09-26',
+        'TSX-2023-09-27',
+        'TSX-2023-09-28',
+        'TSX-2023-09-29',        
+        'TSX-2023-09-30'
+    ]
+    
+    
     repo = 'DATASETS'
     subfolder = '/DAILY'
-    starts_with = 'TSX-2023-11'
-    main(repo, subfolder, starts_with)
+    starts_with = 'TSX-2023-08-0'
+    #starts_with = name
+    main(repo, subfolder, starts_with)  
 
+    
