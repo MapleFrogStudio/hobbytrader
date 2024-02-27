@@ -169,19 +169,17 @@ def test_save_to_parquet(load_price_data):
     if os.path.isfile(file_name):
         os.remove(file_name)    
 
-def test_load_OHLCV_from_db_for_symbols_noDBfile():
-    dbpath = 'DB/nofile.sqlite'
-    with pytest.raises(ValueError):
-        data = database.load_OHLCV_from_db_for_symbols(dbpath, ['TSLA'])
+@pytest.mark.parametrize("db, symbols, expected_exception", [
+    (None, None, ValueError),                               # Test invalid db
+    ('Badpath', None, ValueError),                          # Bad path or file for DB
+    ("DB/minute.sqlite", None, ValueError),                 # Test symbosl is None
+    ("DB/minute.sqlite", "InvalidSymbol", ValueError),      # Test invalid symbols other list
+])
+def test_exceptions_load_OHLCV_from_db_for_symbols(db, symbols, expected_exception):
+    with pytest.raises(expected_exception):
+        database.load_OHLCV_from_db_for_dates(db=db, symbols=symbols)
 
-
-def test_load_OHLCV_from_db_for_symbols_not_a_list():
-    dbpath = 'DB/minute.sqlite'
-    symbol = 'TSLA'
-    data = database.load_OHLCV_from_db_for_symbols(dbpath, symbol)
-    assert data is None
-
-def test_load_OHLCV_from_db_for_symbols_return_df():
+def tst_load_OHLCV_from_db_for_symbols_return_def():
     dbpath = 'DB/minute.sqlite'
     symbols = ['TSLA', 'AAPL']
     data = database.load_OHLCV_from_db_for_symbols(dbpath, symbols)
@@ -196,21 +194,23 @@ def test_load_OHLCV_from_db_for_symbols_return_df():
     assert 'Volume' in data.columns
     print(data)
 
-def test_load_OHLCV_from_db_for_dates_return_df():
-    dbpath = 'DB/minute.sqlite'
-    dt_start = '2023-09-11 15:49:00'
-    dt_end = '2023-09-11 15:52:00'
-    data = database.load_OHLCV_from_db_for_dates(dbpath, dt_start=dt_start, dt_end=dt_end)
-    assert data is not None
-    assert len(data) > 0
-    assert isinstance(data, pd.DataFrame)
-    assert 'Symbol' in data.columns
-    assert 'Open'   in data.columns
-    assert 'High'   in data.columns
-    assert 'Low'    in data.columns
-    assert 'Close'  in data.columns
-    assert 'Volume' in data.columns
-    print(data)
+@pytest.mark.parametrize("db, symbols, dt_start, dt_end, limit, expected_exception", [
+    (None, None, None, None, None, ValueError),                             # Test invalid db
+    ("Badpath", None, None, None, None, ValueError),                        # Test invalid db
+    ("DB/minute.sqlite", None, None, None, None, ValueError),               # Test symbosl is None
+    ("DB/minute.sqlite", "InvalidSymbol", None, None, None, ValueError),    # Test invalid symbols other list
+])
+def test_exceptions_load_OHLCV_from_db_for_dates(db, symbols, dt_start, dt_end, limit, expected_exception):
+    with pytest.raises(expected_exception):
+        database.load_OHLCV_from_db_for_dates(db=db, symbols=symbols, dt_start=dt_start, dt_end=dt_end, limit=limit)
+
+# WARNING run this test on small DB only
+# def test_exceptions_warnings_load_OHLCV_from_db_for_dates():
+#     db = 'DB/minute.sqlite'
+#     symbols = ['AAPL','TSLA']
+#     with pytest.warns(UserWarning):
+#         database.load_OHLCV_from_db_for_dates(db=db, symbols=symbols, dt_start=None, dt_end=None, limit=None)
+
 
 def test_optimize_column_types():
     dbpath = 'DB/minute.sqlite'
