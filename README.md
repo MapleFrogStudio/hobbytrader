@@ -40,7 +40,7 @@ Open a command shell (powershell on windows) and run the command lines below
 > pip install -e .
 ```
 ### Package configuration
-Some environment variables must ne setup for proper package usage. If working in a local environment create a .env file in the root folder of your project and add the following lines:  
+Some environment variables must be setup for proper package usage. If working in a local environment create a .env file in the root folder of your project and add the following lines:  
 ```  
 FMPAD_API_KEY=somerandomkeyfromFFPAD
 DB_SQL_LIMIT = 1000  # 0 no limits applied to SQL Requests

@@ -43,7 +43,9 @@ def generate_ID(prices_df):
     prices_df['ID'] = prices_df.ID + prices_df.Symbol
     return prices_df
 
-def create_db_and_table(db_file) -> sqlite3.Connection:
+def create_db_and_table(db_file: str) -> sqlite3.Connection:
+    if not isinstance(db_file, str):
+        raise TypeError('Parameter not a string.')
     # Special function to create a database with a primary key that will ignore insert of an existing key
     sql_create_prices_table = """ CREATE TABLE IF NOT EXISTS prices (
                                     ID text PRIMARY KEY ON CONFLICT IGNORE,
@@ -55,21 +57,14 @@ def create_db_and_table(db_file) -> sqlite3.Connection:
                                     Open   real,
                                     Volume real
                                 ); """    
-
-    if not isinstance(db_file, str):
-        raise TypeError('Parameter not a string.')
-    conn = None
+    os.makedirs(os.path.dirname(db_file), exist_ok=True)
+    conn = sqlite3.connect(db_file)
+    cursor = conn.cursor() 
     if not os.path.isfile(db_file):
-        conn = sqlite3.connect(db_file)
-        cursor = conn.cursor() 
         cursor.execute(sql_create_prices_table)
-        return conn
     else:
-        #raise ValueError(f'Database already exists: {db_file}')
-        conn = sqlite3.connect(db_file)
-        cursor = conn.cursor() 
         print(f'Database already exists, using file: {db_file}')
-        return conn
+    return conn
     
 #
 # Save to specific file formats
